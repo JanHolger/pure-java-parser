@@ -2,15 +2,18 @@ package eu.bebendorf.purejavaparser.parser;
 
 import eu.bebendorf.purejavaparser.PureJavaParser;
 import eu.bebendorf.purejavaparser.ast.*;
+import eu.bebendorf.purejavaparser.ast.expression.*;
+import eu.bebendorf.purejavaparser.ast.statement.ReturnStatement;
+import eu.bebendorf.purejavaparser.ast.statement.Statement;
+import eu.bebendorf.purejavaparser.ast.statement.StatementBlock;
 import eu.bebendorf.purejavaparser.token.Token;
 import eu.bebendorf.purejavaparser.token.TokenStack;
 import eu.bebendorf.purejavaparser.token.TokenType;
 import lombok.AllArgsConstructor;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 @AllArgsConstructor
 public class ExpressionParser {
@@ -63,7 +66,7 @@ public class ExpressionParser {
         } else {
             Expression expression = parseExpression(stackCopy);
             List<Statement> statements = new ArrayList<>();
-            statements.add(new Return(expression));
+            statements.add(new ReturnStatement(expression));
             body = new StatementBlock(statements);
         }
         stack.copyFrom(stackCopy);
@@ -206,21 +209,60 @@ public class ExpressionParser {
             String value = stack.pop().getValue();
             return value.equals("true") ? BooleanLiteral.TRUE : BooleanLiteral.FALSE;
         }
-        if(stack.peek().getType() == TokenType.DECIMAL_INT_LITERAL) {
-            BigInteger value = new BigInteger(stack.pop().getValue());
-            return new IntegerLiteral(value);
+        TokenStack stackCopy = stack.clone();
+        String s = "";
+        if(stackCopy.peek().is(TokenType.ARITHMETIC_OP, "+"))
+            stackCopy.pop();
+        else if(stackCopy.peek().is(TokenType.ARITHMETIC_OP, "-"))
+            s = stackCopy.pop().getValue();
+        if(stackCopy.peek().getType() == TokenType.DECIMAL_INT_LITERAL || stackCopy.peek().getType() == TokenType.HEX_INT_LITERAL || stackCopy.peek().getType() == TokenType.BINARY_INT_LITERAL) {
+            s += stackCopy.pop().getValue().replace("_", "").toLowerCase(Locale.ROOT);
+            switch (s.charAt(s.length()-1)) {
+                case 'd':
+                    DoubleLiteral d = DoubleLiteral.fromString(s.substring(0, s.length()-1));
+                    if(d != null) {
+                        stack.copyFrom(stackCopy);
+                        return d;
+                    }
+                    break;
+                case 'f':
+                    FloatLiteral f = FloatLiteral.fromString(s.substring(0, s.length()-1));
+                    if(f != null) {
+                        stack.copyFrom(stackCopy);
+                        return f;
+                    }
+                    break;
+                case 'l':
+                    LongLiteral l = LongLiteral.fromString(s.substring(0, s.length()-1));
+                    if(l != null) {
+                        stack.copyFrom(stackCopy);
+                        return l;
+                    }
+                    break;
+                default:
+                    IntegerLiteral i = IntegerLiteral.fromString(s);
+                    if(i != null) {
+                        stack.copyFrom(stackCopy);
+                        return i;
+                    }
+                    break;
+            }
         }
-        if(stack.peek().getType() == TokenType.HEX_INT_LITERAL) {
-            BigInteger value = new BigInteger(stack.pop().getValue().substring(2), 16);
-            return new IntegerLiteral(value);
-        }
-        if(stack.peek().getType() == TokenType.BINARY_INT_LITERAL) {
-            BigInteger value = new BigInteger(stack.pop().getValue().substring(2), 2);
-            return new IntegerLiteral(value);
-        }
-        if(stack.peek().getType() == TokenType.DECIMAL_FLOAT_LITERAL) {
-            BigDecimal value = new BigDecimal(stack.pop().getValue());
-            return new FloatLiteral(value);
+        if(stackCopy.peek().getType() == TokenType.DECIMAL_FLOAT_LITERAL) {
+            s += stackCopy.pop().getValue().replace("_", "").toLowerCase(Locale.ROOT);
+            if(s.charAt(s.length()-1) == 'f') {
+                FloatLiteral f = FloatLiteral.fromString(s.substring(0, s.length()-1));
+                if(f != null) {
+                    stack.copyFrom(stackCopy);
+                    return f;
+                }
+            } else {
+                DoubleLiteral d = DoubleLiteral.fromString(s.charAt(s.length() - 1) == 'd' ? s.substring(0, s.length()-1) : s);
+                if(d != null) {
+                    stack.copyFrom(stackCopy);
+                    return d;
+                }
+            }
         }
         if(stack.peek().getType() == TokenType.STRING_LITERAL) {
             String value = stack.pop().getValue();
@@ -232,7 +274,7 @@ public class ExpressionParser {
         }
         if(stack.peek().getType() == TokenType.NAME) {
             try {
-                TokenStack stackCopy = stack.trim().clone();
+                stackCopy = stack.trim().clone();
                 ClassLiteral classLiteral = parseClassLiteral(stackCopy);
                 stack.copyFrom(stackCopy);
                 return classLiteral;

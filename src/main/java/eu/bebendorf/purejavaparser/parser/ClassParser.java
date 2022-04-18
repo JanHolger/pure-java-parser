@@ -2,6 +2,7 @@ package eu.bebendorf.purejavaparser.parser;
 
 import eu.bebendorf.purejavaparser.PureJavaParser;
 import eu.bebendorf.purejavaparser.ast.*;
+import eu.bebendorf.purejavaparser.ast.statement.StatementBlock;
 import eu.bebendorf.purejavaparser.token.Token;
 import eu.bebendorf.purejavaparser.token.TokenStack;
 import eu.bebendorf.purejavaparser.token.TokenType;
@@ -321,8 +322,17 @@ public class ClassParser {
         Type type = parser.getGeneralParser().parseType(stack, true, true, false);
         Variable variable = parser.getGeneralParser().parseVariable(stack);
         TypedParameterList parameters = parseTypedParameterList(stack);
+        List<Type> throwables = new ArrayList<>();
+        if(stack.trim().peek().getType() == TokenType.THROWS) {
+            stack.pop();
+            throwables.add(parser.getGeneralParser().parseType(stack, false, false, false));
+            while (stack.trim().peek().getType() == TokenType.SEPERATOR) {
+                stack.pop();
+                throwables.add(parser.getGeneralParser().parseType(stack, false, false, false));
+            }
+        }
         StatementBlock body = parser.getStatementParser().parseStatementBlock(stack);
-        return new MethodDefinition(modifiers, type, variable, parameters, body);
+        return new MethodDefinition(modifiers, type, variable, parameters, throwables, body);
     }
 
     private MethodModifiers parseMethodModifiers(TokenStack stack) throws UnexpectedTokenException {

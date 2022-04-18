@@ -2,6 +2,8 @@ package eu.bebendorf.purejavaparser.parser;
 
 import eu.bebendorf.purejavaparser.PureJavaParser;
 import eu.bebendorf.purejavaparser.ast.*;
+import eu.bebendorf.purejavaparser.ast.expression.Expression;
+import eu.bebendorf.purejavaparser.ast.statement.*;
 import eu.bebendorf.purejavaparser.token.TokenStack;
 import eu.bebendorf.purejavaparser.token.TokenType;
 import lombok.AllArgsConstructor;

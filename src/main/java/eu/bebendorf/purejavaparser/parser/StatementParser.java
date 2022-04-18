@@ -2,6 +2,8 @@ package eu.bebendorf.purejavaparser.parser;
 
 import eu.bebendorf.purejavaparser.PureJavaParser;
 import eu.bebendorf.purejavaparser.ast.*;
+import eu.bebendorf.purejavaparser.ast.expression.Expression;
+import eu.bebendorf.purejavaparser.ast.statement.*;
 import eu.bebendorf.purejavaparser.token.Token;
 import eu.bebendorf.purejavaparser.token.TokenStack;
 import eu.bebendorf.purejavaparser.token.TokenType;
@@ -66,19 +68,34 @@ public class StatementParser {
                 stack.copyFrom(stackCopy);
                 return statement;
             }
+            case RETURN: {
+                ReturnStatement ret = parseReturn(stackCopy);
+                Token t = stackCopy.trim().pop();
+                if(t.getType() != TokenType.STATEMENT_END)
+                    throw new UnexpectedTokenException(t);
+                stack.copyFrom(stackCopy);
+                return ret;
+            }
+            case ASSERT: {
+                stackCopy.pop();
+                Expression assertion = parser.getExpressionParser().parseExpression(stackCopy);
+                if(stackCopy.trim().peek().getType() != TokenType.STATEMENT_END)
+                    throw new UnexpectedTokenException(stackCopy.pop());
+                stackCopy.pop();
+                stack.copyFrom(stackCopy);
+                return new AssertStatement(assertion);
+            }
+            case THROW: {
+                stackCopy.pop();
+                Expression value = parser.getExpressionParser().parseExpression(stackCopy);
+                if(stackCopy.trim().peek().getType() != TokenType.STATEMENT_END)
+                    throw new UnexpectedTokenException(stackCopy.pop());
+                stackCopy.pop();
+                stack.copyFrom(stackCopy);
+                return new ThrowStatement(value);
+            }
         }
-        stackCopy = stack.clone();
         UnexpectedTokenException ex;
-        try {
-            Return ret = parseReturn(stackCopy);
-            Token t = stackCopy.trim().pop();
-            if(t.getType() != TokenType.STATEMENT_END)
-                throw new UnexpectedTokenException(t);
-            stack.copyFrom(stackCopy);
-            return ret;
-        } catch (UnexpectedTokenException nextEx) {
-            ex = nextEx;
-        }
         stackCopy = stack.clone();
         try {
             VariableDefinition vd = parser.getGeneralParser().parseVariableDefinition(stackCopy, false, true);
@@ -88,7 +105,7 @@ public class StatementParser {
             stack.copyFrom(stackCopy);
             return vd;
         } catch (UnexpectedTokenException nextEx) {
-            ex = nextEx.getToken().getPos() > ex.getToken().getPos() ? nextEx : ex;
+            ex = nextEx;
         }
         stackCopy = stack.clone();
         try {
@@ -125,7 +142,7 @@ public class StatementParser {
         throw ex;
     }
 
-    private Return parseReturn(TokenStack stack) throws UnexpectedTokenException {
+    private ReturnStatement parseReturn(TokenStack stack) throws UnexpectedTokenException {
         Token t = stack.trim().pop();
         if(t.getType() != TokenType.RETURN)
             throw new UnexpectedTokenException(t);
@@ -133,9 +150,9 @@ public class StatementParser {
         try {
             Expression expression = parser.getExpressionParser().parseExpression(stackCopy);
             stack.copyFrom(stackCopy);
-            return new Return(expression);
+            return new ReturnStatement(expression);
         } catch (UnexpectedTokenException e) {
-            return new Return();
+            return new ReturnStatement();
         }
     }
 

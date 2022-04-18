@@ -1,7 +1,7 @@
 package eu.bebendorf.purejavaparser.parser;
 
 import eu.bebendorf.purejavaparser.PureJavaParser;
-import eu.bebendorf.purejavaparser.ast.Expression;
+import eu.bebendorf.purejavaparser.ast.expression.Expression;
 import eu.bebendorf.purejavaparser.ast.Type;
 import eu.bebendorf.purejavaparser.ast.Variable;
 import eu.bebendorf.purejavaparser.ast.VariableDefinition;

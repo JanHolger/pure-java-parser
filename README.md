@@ -23,7 +23,7 @@ public class ExpressionExample {
         TokenStack stack = Tokenizer.tokenize("MyClass.java", source); // Manually tokenize the source
         Expression expression = parser.getExpressionParser().parseExpression(stack); // Parse the source into an ast
         if (stack.trim().peek().getType() != TokenType.EOF) // Manually check if the end of input is reached
-            throw new UnexpectedTokenException(stack.pop()); // Throw an error in case there unconsumed tokens
+            throw new UnexpectedTokenException(stack.pop()); // Throw an error in case there are unconsumed tokens
         System.out.println(expression.toString()); // Generate and print source code for visualization
     }
 }
@@ -36,12 +36,8 @@ These are features that are known to be missing
 - Native and Abstract Methods
 - Enums
 - Interfaces
-- throw
-- throws
 - new
 - Annotations
-- assert
-- Explicit types for numerals (f, d, l)
 - Underscores in numerals
 - Type casting
 - Generic type definition for classes and methods
