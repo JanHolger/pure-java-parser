@@ -36,7 +36,6 @@ These are features that are known to be missing
 - Native and Abstract Methods
 - Enums
 - Interfaces
-- new
 - Type casting
 - Generic type definition for classes and methods
-- Anonymous extending
+- Instance and static initializers

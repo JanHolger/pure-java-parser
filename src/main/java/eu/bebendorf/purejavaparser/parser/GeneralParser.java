@@ -89,6 +89,16 @@ public class GeneralParser {
         }
         Type type = parseType(stackCopy, true, true, false);
         Variable variable = parseVariable(stackCopy);
+        if(!type.isVarArgs() && stackCopy.trim().peek().getType() == TokenType.ARRAY_START) {
+            int arrayDepth = 0;
+            while (stackCopy.trim().peek().getType() == TokenType.ARRAY_START) {
+                stackCopy.pop();
+                if(stackCopy.trim().peek().getType() != TokenType.ARRAY_END)
+                    throw new UnexpectedTokenException(stackCopy.pop());
+                arrayDepth++;
+            }
+            type = new Type(type.getName(), type.getGenericTypes(), type.getArrayDepth() + arrayDepth, false);
+        }
         Expression initializer = null;
         if(stackCopy.trim().peek().getType() == TokenType.ASSIGN_OP) {
             stackCopy.pop();

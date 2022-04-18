@@ -18,10 +18,14 @@ public class Type {
     boolean varArgs;
 
     public String toString() {
-        return String.join(".", name) +
-                (genericTypes.size() > 0 ? ("<" + genericTypes.stream().map(Objects::toString).collect(Collectors.joining(", ")) + ">") : "") +
+        return toComponentString() +
                 Stream.of(new String[varArgs ? arrayDepth - 1 : arrayDepth]).map(s -> "[]").collect(Collectors.joining("")) +
                 (varArgs ? "..." : "");
+    }
+
+    public String toComponentString() {
+        return String.join(".", name) +
+                (genericTypes.size() > 0 ? ("<" + genericTypes.stream().map(Objects::toString).collect(Collectors.joining(", ")) + ">") : "");
     }
 
 }

@@ -144,41 +144,46 @@ public class ClassParser {
                 interfaces.add(parser.getGeneralParser().parseType(stackCopy, true, false, false));
             }
         }
-        if(stackCopy.trim().peek().getType() != TokenType.OPEN_CURLY_BRACKET)
-            throw new UnexpectedTokenException(stackCopy.pop());
-        stackCopy.pop();
+        ClassBody body = parseClassBody(stackCopy, local, false);
+        stack.copyFrom(stackCopy);
+        return new ClassDefinition(annotations, modifiers, name, superClass, interfaces, body);
+    }
+
+    public ClassBody parseClassBody(TokenStack stack, boolean local, boolean anonymous) throws UnexpectedTokenException {
+        if(stack.trim().peek().getType() != TokenType.OPEN_CURLY_BRACKET)
+            throw new UnexpectedTokenException(stack.pop());
+        stack.pop();
         List<FieldDefinition> fields = new ArrayList<>();
         List<MethodDefinition> methods = new ArrayList<>();
         List<TypeDefinition> innerClasses = new ArrayList<>();
-        while (stackCopy.trim().peek().getType() != TokenType.CLOSE_CURLY_BRACKET) {
+        while (stack.trim().peek().getType() != TokenType.CLOSE_CURLY_BRACKET) {
             UnexpectedTokenException ex;
-            TokenStack s = stackCopy.clone();
+            TokenStack s = stack.clone();
             try {
                 fields.add(parseFieldDefinition(s));
-                stackCopy.copyFrom(s);
+                stack.copyFrom(s);
                 continue;
             } catch (UnexpectedTokenException nextEx) {
                 ex = nextEx;
             }
-            s = stackCopy.clone();
+            s = stack.clone();
             try {
                 methods.add(parseMethodDefinition(s));
-                stackCopy.copyFrom(s);
+                stack.copyFrom(s);
                 continue;
             } catch (UnexpectedTokenException nextEx) {
                 ex = nextEx.getToken().getPos() > ex.getToken().getPos() ? nextEx : ex;
             }
-            s = stackCopy.clone();
+            s = stack.clone();
             try {
                 innerClasses.add(parseTypeDefinition(s, local));
-                stackCopy.copyFrom(s);
+                stack.copyFrom(s);
             } catch (UnexpectedTokenException nextEx) {
                 throw nextEx.getToken().getPos() > ex.getToken().getPos() ? nextEx : ex;
             }
         }
-        stackCopy.pop();
-        stack.copyFrom(stackCopy);
-        return new ClassDefinition(annotations, modifiers, name, superClass, interfaces, fields, methods, innerClasses);
+        stack.pop();
+        return new ClassBody(fields, methods, innerClasses);
     }
 
     private ClassModifiers parseClassModifiers(TokenStack stack, TokenType... allowed) throws UnexpectedTokenException {

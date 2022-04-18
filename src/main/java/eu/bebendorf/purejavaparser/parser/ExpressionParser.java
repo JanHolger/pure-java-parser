@@ -10,7 +10,6 @@ import eu.bebendorf.purejavaparser.token.Token;
 import eu.bebendorf.purejavaparser.token.TokenStack;
 import eu.bebendorf.purejavaparser.token.TokenType;
 import lombok.AllArgsConstructor;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -22,26 +21,13 @@ public class ExpressionParser {
 
     public Expression parseExpression(TokenStack stack) throws UnexpectedTokenException {
         TokenStack stackCopy = stack.trim().clone();
-        UnexpectedTokenException ex = null;
-        try {
-            Expression expression = parseLambdaExpression(stackCopy);
-            stack.copyFrom(stackCopy);
-            return expression;
-        } catch (UnexpectedTokenException nextEx) {
-            ex = nextEx;
-            stackCopy = stack.clone();
-        }
-        try {
-            Expression expression = resolveGroup(stackCopy);
-            expression = tryExpandAccessExpression(stackCopy, expression);
-            expression = tryExpandFactorizationExpression(stackCopy, expression);
-            expression = tryExpandAdditiveExpression(stackCopy, expression);
-            expression = tryExpandComparisonExpression(stackCopy, expression);
-            stack.copyFrom(stackCopy);
-            return expression;
-        } catch (UnexpectedTokenException nextEx) {
-            throw nextEx.getToken().getPos() > ex.getToken().getPos() ? nextEx : ex;
-        }
+        Expression expression = resolveGroup(stackCopy);
+        expression = tryExpandAccessExpression(stackCopy, expression);
+        expression = tryExpandFactorizationExpression(stackCopy, expression);
+        expression = tryExpandAdditiveExpression(stackCopy, expression);
+        expression = tryExpandComparisonExpression(stackCopy, expression);
+        stack.copyFrom(stackCopy);
+        return expression;
     }
 
     private Expression parseLambdaExpression(TokenStack stack) throws UnexpectedTokenException {
@@ -91,18 +77,32 @@ public class ExpressionParser {
     }
 
     private ParameterDefinition parseParameterDefinition(TokenStack stack) throws UnexpectedTokenException {
-        Variable variable = parser.getGeneralParser().parseVariable(stack);
-        return new ParameterDefinition(variable);
+        return new ParameterDefinition(parser.getGeneralParser().parseVariable(stack));
     }
 
     private Expression resolveGroup(TokenStack stack) throws UnexpectedTokenException {
-        if(stack.trim().peek().getType() == TokenType.GROUP_START) {
-            stack.pop();
-            Expression expression = parseExpression(stack);
-            if(stack.trim().peek().getType() != TokenType.GROUP_END)
-                throw new UnexpectedTokenException(stack.pop());
-            stack.pop();
-            return new ExpressionGroup(expression);
+        if (stack.trim().peek().getType() == TokenType.GROUP_START) {
+            UnexpectedTokenException ex;
+            try {
+                TokenStack stackCopy = stack.clone();
+                Expression l = parseLambdaExpression(stackCopy);
+                stack.copyFrom(stackCopy);
+                return l;
+            } catch (UnexpectedTokenException nextEx) {
+                ex = nextEx;
+            }
+            try {
+                stack.pop();
+                Expression expression = parseExpression(stack);
+                if (stack.trim().peek().getType() != TokenType.GROUP_END)
+                    throw new UnexpectedTokenException(stack.pop());
+                stack.pop();
+                return new ExpressionGroup(expression);
+            } catch (UnexpectedTokenException nextEx) {
+                throw nextEx.getToken().getPos() > ex.getToken().getPos() ? nextEx : ex;
+            }
+        } else if(stack.peek().getType() == TokenType.NEW) {
+            return parseNewExpression(stack);
         } else {
             return parseTerminalExpression(stack);
         }
@@ -209,6 +209,73 @@ public class ExpressionParser {
         } catch (UnexpectedTokenException ex) {
             return parser.getGeneralParser().parseVariable(stack);
         }
+    }
+
+    private New parseNewExpression(TokenStack stack) throws UnexpectedTokenException {
+        if(stack.trim().peek().getType() != TokenType.NEW)
+            throw new UnexpectedTokenException(stack.pop());
+        stack.pop();
+        Type type = parser.getGeneralParser().parseType(stack, true, false, false);
+        ArgumentList argumentList = null;
+        int arrayDepth = 0;
+        List<Expression> arraySizes = new ArrayList<>();
+        ArrayInitializer arrayInitializer = null;
+        ClassBody anonymousBody = null;
+        if(stack.trim().peek().getType() == TokenType.ARRAY_START) {
+            while (stack.trim().peek().getType() == TokenType.ARRAY_START) {
+                if(stack.trim().peek().getType() != TokenType.ARRAY_END && (arrayDepth == 0 || arraySizes.size() > 0)) {
+                    Expression size = parseExpression(stack);
+                    arraySizes.add(size);
+                }
+                if(stack.trim().peek().getType() != TokenType.ARRAY_END)
+                    throw new UnexpectedTokenException(stack.pop());
+                stack.pop();
+                arrayDepth++;
+            }
+            if(arraySizes.size() == 0)
+                arrayInitializer = parseArrayInitializer(stack, arrayDepth);
+            type = new Type(type.getName(), type.getGenericTypes(), arrayDepth, false);
+        } else {
+            argumentList = parseArgumentList(stack);
+            if(stack.trim().peek().getType() == TokenType.OPEN_CURLY_BRACKET)
+                anonymousBody = parser.getClassParser().parseClassBody(stack, true, true);
+        }
+        return new New(type, arraySizes, arrayInitializer, argumentList, anonymousBody);
+    }
+
+    private ArrayInitializer parseArrayInitializer(TokenStack stack, int depth) throws UnexpectedTokenException {
+        if(stack.trim().peek().getType() != TokenType.OPEN_CURLY_BRACKET)
+            throw new UnexpectedTokenException(stack.pop());
+        List<Expression> values = new ArrayList<>();
+        while (stack.trim().peek().getType() != TokenType.CLOSE_CURLY_BRACKET) {
+            if(values.size() > 0) {
+                if(stack.trim().peek().getType() != TokenType.SEPERATOR)
+                    throw new UnexpectedTokenException(stack.pop());
+                stack.pop();
+            }
+            if(depth > 1) {
+                values.add(parseArrayInitializer(stack, depth - 1));
+            } else {
+                UnexpectedTokenException ex = null;
+                if(depth < 1) {
+                    try {
+                        TokenStack stackCopy = stack.clone();
+                        values.add(parseArrayInitializer(stackCopy, depth));
+                        stack.copyFrom(stackCopy);
+                        continue;
+                    } catch (UnexpectedTokenException nextEx) {
+                        ex = nextEx;
+                    }
+                }
+                try {
+                    values.add(parseExpression(stack));
+                } catch (UnexpectedTokenException nextEx) {
+                    throw (ex == null || (nextEx.getToken().getPos() > ex.getToken().getPos())) ? nextEx : ex;
+                }
+            }
+        }
+        stack.pop();
+        return new ArrayInitializer(values);
     }
 
     public Expression parseLiteral(TokenStack stack) throws UnexpectedTokenException {
