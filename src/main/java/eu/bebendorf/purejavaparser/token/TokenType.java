@@ -7,6 +7,8 @@ import java.util.regex.Pattern;
 @Getter
 public enum TokenType {
 
+    SINGLE_LINE_COMMENT("//[^\n]*", false),
+    MULTI_LINE_COMMENT("/\\*[\\s\\S]*?\\*/", false),
     STRING_LITERAL("\"((\\\\\\\\)|(\\\\\")|[^\\n\"])*\"", false),
     CHAR_LITERAL("'((\\\\['nrtbf0])|[^\\n'])'", false),
     HEX_INT_LITERAL("0x[0-9a-fA-F]+(_[0-9a-fA-F]+)*[Ll]?", false),
@@ -34,7 +36,7 @@ public enum TokenType {
     ARRAY_END("\\]", false),
     SEPERATOR(",", false),
     NAME("[_A-Za-z$][_A-Za-z0-9$]*", false),
-    WHITESPACE("[\\n\\t ]+", false),
+    WHITESPACE("[\\n\\r\\t ]+", false),
     EOF("", false),
     LAMBDA_ARROW("\\->", false),
     VARARGS("\\.\\.\\.", false),
@@ -77,6 +79,9 @@ public enum TokenType {
     BITWISE_OP("\\||&|(\\<\\<\\<)|(\\>\\>\\>)|(\\<\\<)|(\\>\\>)", false);
 
     private static final TokenType[] ordered = new TokenType[] {
+            // Comments
+            SINGLE_LINE_COMMENT,
+            MULTI_LINE_COMMENT,
             // Literals
             BOOLEAN_LITERAL,
             NULL_LITERAL,

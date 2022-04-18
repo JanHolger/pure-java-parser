@@ -7,20 +7,16 @@ import java.util.List;
 
 @AllArgsConstructor
 @Getter
-public class FieldDefinition {
+public class PackageStatement {
 
     List<Annotation> annotations;
-    FieldModifiers modifiers;
-    VariableDefinition variableDefinition;
+    List<String> name;
 
     public String toString() {
-        String modifiers = this.modifiers.toString();
-        if(modifiers.length() > 0)
-            modifiers += " ";
         StringBuilder sb = new StringBuilder();
         for(Annotation a : annotations)
             sb.append(a).append("\n");
-        return sb.append(modifiers).append(variableDefinition).toString();
+        return sb.append("package ").append(String.join(".", name)).append(";").toString();
     }
 
 }

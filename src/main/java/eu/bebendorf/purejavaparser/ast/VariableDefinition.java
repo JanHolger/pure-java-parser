@@ -6,10 +6,13 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.List;
+
 @AllArgsConstructor
 @Getter
 public class VariableDefinition implements Statement {
 
+    List<Annotation> annotations;
     @Getter(AccessLevel.NONE)
     boolean finalModifier;
     Type type;
@@ -21,7 +24,19 @@ public class VariableDefinition implements Statement {
     }
 
     public String toString() {
-        return (finalModifier ? "final " : "") + type.toString() + " " + variable.toString() + (initializer != null ? (" = " + initializer) : "");
+        StringBuilder sb = new StringBuilder();
+        if(annotations.size() == 1) {
+            sb.append(annotations.get(0)).append(" ");
+        } else {
+            for(Annotation a : annotations)
+                sb.append(a).append("\n");
+        }
+        if(finalModifier)
+            sb.append("final ");
+        sb.append(type).append(" ").append(variable);
+        if(initializer != null)
+            sb.append(" = ").append(initializer);
+        return sb.toString();
     }
 
 }

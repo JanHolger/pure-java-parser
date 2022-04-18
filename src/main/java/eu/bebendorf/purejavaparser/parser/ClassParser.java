@@ -7,7 +7,9 @@ import eu.bebendorf.purejavaparser.token.Token;
 import eu.bebendorf.purejavaparser.token.TokenStack;
 import eu.bebendorf.purejavaparser.token.TokenType;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,13 +35,17 @@ public class ClassParser {
     };
 
     public ClassFileDefinition parseClassFile(TokenStack stack) throws UnexpectedTokenException {
-        List<String> packageName = null;
-        if(stack.trim().peek().getType() == TokenType.PACKAGE) {
+        PackageStatement packageStatement = null;
+        TokenStack stackCopy = stack.clone();
+        List<Annotation> annotations = parser.getGeneralParser().parseAnnotations(stackCopy);
+        if(stackCopy.trim().peek().getType() == TokenType.PACKAGE) {
+            stack.copyFrom(stackCopy);
             stack.pop();
-            packageName = parsePackageName(stack);
+            List<String> name = parsePackageName(stack);
             if(stack.trim().peek().getType() != TokenType.STATEMENT_END)
                 throw new UnexpectedTokenException(stack.pop());
             stack.pop();
+            packageStatement = new PackageStatement(annotations, name);
         }
         List<ImportStatement> imports = new ArrayList<>();
         while (stack.trim().peek().getType() == TokenType.IMPORT)
@@ -47,7 +53,7 @@ public class ClassParser {
         List<TypeDefinition> classes = new ArrayList<>();
         while (stack.trim().peek().getType() != TokenType.EOF)
             classes.add(parseTypeDefinition(stack, false));
-        return new ClassFileDefinition(packageName, imports, classes);
+        return new ClassFileDefinition(packageStatement, imports, classes);
     }
 
     private List<String> parsePackageName(TokenStack stack) throws UnexpectedTokenException {
@@ -116,6 +122,7 @@ public class ClassParser {
 
     private ClassDefinition parseClassDefinition(TokenStack stack, boolean local) throws UnexpectedTokenException {
         TokenStack stackCopy = stack.trim().clone();
+        List<Annotation> annotations = parser.getGeneralParser().parseAnnotations(stackCopy);
         ClassModifiers modifiers = parseClassModifiers(stackCopy, local ? LOCAL_CLASS_MODIFIERS : NORMAL_CLASS_MODIFIERS);
         if(stackCopy.trim().peek().getType() != TokenType.CLASS)
             throw new UnexpectedTokenException(stackCopy.pop());
@@ -171,7 +178,7 @@ public class ClassParser {
         }
         stackCopy.pop();
         stack.copyFrom(stackCopy);
-        return new ClassDefinition(modifiers, name, superClass, interfaces, fields, methods, innerClasses);
+        return new ClassDefinition(annotations, modifiers, name, superClass, interfaces, fields, methods, innerClasses);
     }
 
     private ClassModifiers parseClassModifiers(TokenStack stack, TokenType... allowed) throws UnexpectedTokenException {
@@ -246,13 +253,14 @@ public class ClassParser {
 
     private FieldDefinition parseFieldDefinition(TokenStack stack) throws UnexpectedTokenException {
         TokenStack stackCopy = stack.trim().clone();
+        List<Annotation> annotations = parser.getGeneralParser().parseAnnotations(stackCopy);
         FieldModifiers modifiers = parseFieldModifiers(stackCopy);
-        VariableDefinition variableDefinition = parser.getGeneralParser().parseVariableDefinition(stackCopy, false, false);
+        VariableDefinition variableDefinition = parser.getGeneralParser().parseVariableDefinition(stackCopy, false, false, false);
         if(stackCopy.trim().peek().getType() != TokenType.STATEMENT_END)
             throw new UnexpectedTokenException(stackCopy.pop());
         stackCopy.pop();
         stack.copyFrom(stackCopy);
-        return new FieldDefinition(modifiers, variableDefinition);
+        return new FieldDefinition(annotations, modifiers, variableDefinition);
     }
 
     private FieldModifiers parseFieldModifiers(TokenStack stack) throws UnexpectedTokenException {
@@ -318,21 +326,24 @@ public class ClassParser {
     }
 
     public MethodDefinition parseMethodDefinition(TokenStack stack) throws UnexpectedTokenException {
-        MethodModifiers modifiers = parseMethodModifiers(stack);
-        Type type = parser.getGeneralParser().parseType(stack, true, true, false);
-        Variable variable = parser.getGeneralParser().parseVariable(stack);
-        TypedParameterList parameters = parseTypedParameterList(stack);
+        TokenStack stackCopy = stack.clone();
+        List<Annotation> annotations = parser.getGeneralParser().parseAnnotations(stackCopy);
+        MethodModifiers modifiers = parseMethodModifiers(stackCopy);
+        Type type = parser.getGeneralParser().parseType(stackCopy, true, true, false);
+        Variable variable = parser.getGeneralParser().parseVariable(stackCopy);
+        TypedParameterList parameters = parseTypedParameterList(stackCopy);
         List<Type> throwables = new ArrayList<>();
-        if(stack.trim().peek().getType() == TokenType.THROWS) {
-            stack.pop();
-            throwables.add(parser.getGeneralParser().parseType(stack, false, false, false));
-            while (stack.trim().peek().getType() == TokenType.SEPERATOR) {
-                stack.pop();
-                throwables.add(parser.getGeneralParser().parseType(stack, false, false, false));
+        if(stackCopy.trim().peek().getType() == TokenType.THROWS) {
+            stackCopy.pop();
+            throwables.add(parser.getGeneralParser().parseType(stackCopy, false, false, false));
+            while (stackCopy.trim().peek().getType() == TokenType.SEPERATOR) {
+                stackCopy.pop();
+                throwables.add(parser.getGeneralParser().parseType(stackCopy, false, false, false));
             }
         }
-        StatementBlock body = parser.getStatementParser().parseStatementBlock(stack);
-        return new MethodDefinition(modifiers, type, variable, parameters, throwables, body);
+        StatementBlock body = parser.getStatementParser().parseStatementBlock(stackCopy);
+        stack.copyFrom(stackCopy);
+        return new MethodDefinition(annotations, modifiers, type, variable, parameters, throwables, body);
     }
 
     private MethodModifiers parseMethodModifiers(TokenStack stack) throws UnexpectedTokenException {
@@ -429,9 +440,10 @@ public class ClassParser {
     }
 
     private TypedParameterDefinition parseTypedParameterDefinition(TokenStack stack) throws UnexpectedTokenException {
+        List<Annotation> annotations = parser.getGeneralParser().parseAnnotations(stack);
         Type type = parser.getGeneralParser().parseType(stack, true, true, true);
         Variable variable = parser.getGeneralParser().parseVariable(stack);
-        return new TypedParameterDefinition(type, variable);
+        return new TypedParameterDefinition(annotations, type, variable);
     }
 
 }

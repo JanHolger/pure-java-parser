@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 @Getter
 public class ClassDefinition implements TypeDefinition {
 
+    List<Annotation> annotations;
     ClassModifiers modifiers;
     String name;
     Type superClass;
@@ -23,7 +24,10 @@ public class ClassDefinition implements TypeDefinition {
         String modifiers = this.modifiers.toString();
         if(modifiers.length() > 0)
             modifiers += " ";
-        StringBuilder sb = new StringBuilder(modifiers).append("class ").append(name);
+        StringBuilder sb = new StringBuilder();
+        for(Annotation a : annotations)
+            sb.append(a).append("\n");
+        sb.append(modifiers).append("class ").append(name);
         if(superClass != null)
             sb.append(" extends ").append(superClass);
         if(interfaces.size() > 0)

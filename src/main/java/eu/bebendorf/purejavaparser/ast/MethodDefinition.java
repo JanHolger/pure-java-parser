@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 @Getter
 public class MethodDefinition {
 
+    List<Annotation> annotations;
     MethodModifiers modifiers;
     Type type;
     Variable variable;
@@ -22,12 +23,13 @@ public class MethodDefinition {
         String modifiers = this.modifiers.toString();
         if(modifiers.length() > 0)
             modifiers += " ";
-        return modifiers +
-                type.toString() + " " +
-                variable.toString() +
-                parameters.toString() + " " +
-                (throwables.size() > 0 ? ("throws " + throwables.stream().map(Object::toString).collect(Collectors.joining(", ")) + " ") : " ") +
-                body.toString();
+        StringBuilder sb = new StringBuilder();
+        for(Annotation a : annotations)
+            sb.append(a).append("\n");
+        sb.append(modifiers).append(type).append(" ").append(variable).append(parameters).append(" ");
+        if(throwables.size() > 0)
+            sb.append("throws ").append(throwables.stream().map(Object::toString).collect(Collectors.joining(", ")));
+        return sb.append(" ").append(body).toString();
     }
 
 }

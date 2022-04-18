@@ -201,7 +201,18 @@ public class ExpressionParser {
     }
 
     private Expression parseTerminalExpression(TokenStack stack) throws UnexpectedTokenException {
-        if(stack.peek().getType() == TokenType.NULL_LITERAL) {
+        TokenStack stackCopy = stack.clone();
+        try {
+            Expression literal = parseLiteral(stackCopy);
+            stack.copyFrom(stackCopy);
+            return literal;
+        } catch (UnexpectedTokenException ex) {
+            return parser.getGeneralParser().parseVariable(stack);
+        }
+    }
+
+    public Expression parseLiteral(TokenStack stack) throws UnexpectedTokenException {
+        if(stack.trim().peek().getType() == TokenType.NULL_LITERAL) {
             stack.pop();
             return NullLiteral.INSTANCE;
         }
@@ -273,14 +284,10 @@ public class ExpressionParser {
             return new CharLiteral(unescapeCharLiteral(value.substring(1, value.length() - 1)));
         }
         if(stack.peek().getType() == TokenType.NAME) {
-            try {
-                stackCopy = stack.trim().clone();
-                ClassLiteral classLiteral = parseClassLiteral(stackCopy);
-                stack.copyFrom(stackCopy);
-                return classLiteral;
-            } catch (UnexpectedTokenException ex) {
-                return new Variable(stack.pop().getValue());
-            }
+            stackCopy = stack.trim().clone();
+            ClassLiteral classLiteral = parseClassLiteral(stackCopy);
+            stack.copyFrom(stackCopy);
+            return classLiteral;
         }
         throw new UnexpectedTokenException(stack.pop());
     }

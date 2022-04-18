@@ -28,7 +28,11 @@ public class TokenStack {
     }
 
     public TokenStack trim() {
-        while (size() > 0 && peek().getType() == TokenType.WHITESPACE)
+        return trim(true);
+    }
+
+    public TokenStack trim(boolean trimComments) {
+        while (size() > 0 && (peek().getType() == TokenType.WHITESPACE || (trimComments && (peek().getType() == TokenType.SINGLE_LINE_COMMENT || peek().getType() == TokenType.MULTI_LINE_COMMENT))))
             pop();
         return this;
     }

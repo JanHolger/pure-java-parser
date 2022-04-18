@@ -98,7 +98,7 @@ public class StatementParser {
         UnexpectedTokenException ex;
         stackCopy = stack.clone();
         try {
-            VariableDefinition vd = parser.getGeneralParser().parseVariableDefinition(stackCopy, false, true);
+            VariableDefinition vd = parser.getGeneralParser().parseVariableDefinition(stackCopy, true, true, false);
             Token t = stackCopy.trim().pop();
             if(t.getType() != TokenType.STATEMENT_END)
                 throw new UnexpectedTokenException(t);

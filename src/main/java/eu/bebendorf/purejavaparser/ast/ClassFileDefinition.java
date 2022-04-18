@@ -9,14 +9,14 @@ import java.util.List;
 @Getter
 public class ClassFileDefinition {
 
-    List<String> packageName;
+    PackageStatement packageStatement;
     List<ImportStatement> imports;
     List<TypeDefinition> classes;
 
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        if(packageName != null)
-            sb.append("package ").append(String.join(".", packageName)).append(";\n\n");
+        if(packageStatement != null)
+            sb.append(packageStatement).append("\n\n");
         if(imports.size() > 0) {
             for(ImportStatement i : imports)
                 sb.append(i.toString()).append("\n");

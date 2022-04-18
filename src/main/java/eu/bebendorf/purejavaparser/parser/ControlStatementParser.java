@@ -85,7 +85,7 @@ public class ControlStatementParser {
                         throw new UnexpectedTokenException(stack.pop());
                     stack.pop();
                 }
-                resources.add(parser.getGeneralParser().parseVariableDefinition(stack, true, true));
+                resources.add(parser.getGeneralParser().parseVariableDefinition(stack, true, true, true));
             }
             stack.pop();
         }

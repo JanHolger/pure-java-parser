@@ -37,8 +37,6 @@ These are features that are known to be missing
 - Enums
 - Interfaces
 - new
-- Annotations
-- Underscores in numerals
 - Type casting
 - Generic type definition for classes and methods
 - Anonymous extending
