@@ -24,6 +24,8 @@ public enum TokenType {
     STATIC("static", true),
     ARITHMETIC_OP("\\+|\\-|\\*|/|%", false),
     COMPARISON_OP("(==)|(!=)|\\<|\\>|(<=)|(>=)", false),
+    TERNARY_OP("\\?", false),
+    COLON(":", false),
     ASSIGN_OP("=", false),
     INVERSION_OP("!", false),
     PROPERTY_ACCESS("\\.", false),
@@ -129,6 +131,8 @@ public enum TokenType {
             COMPARISON_OP,
             INVERSION_OP,
             ASSIGN_OP,
+            TERNARY_OP,
+            COLON,
             // Control Flow
             IF,
             ELSE,

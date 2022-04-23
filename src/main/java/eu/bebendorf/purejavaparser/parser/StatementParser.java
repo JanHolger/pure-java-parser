@@ -23,7 +23,7 @@ public class StatementParser {
         this.controlStatementParser = new ControlStatementParser(parser);
     }
 
-    public StatementBlock parseStatementBlock(TokenStack stack) throws UnexpectedTokenException {
+    public StatementBlock parseStatementBlock(TokenStack stack, boolean isSwitch) throws UnexpectedTokenException {
         if(stack.trim().peek().getType() != TokenType.OPEN_CURLY_BRACKET)
             throw new UnexpectedTokenException(stack.pop());
         stack.pop();
@@ -33,23 +33,35 @@ public class StatementParser {
                 stack.pop();
                 continue;
             }
-            Statement statement = parseStatement(stack, true);
+            TokenStack stackCopy = stack.clone();
+            Statement statement = parseStatement(stackCopy, true, isSwitch);
+            if(isSwitch && statements.size() == 0 && !(statement instanceof CaseStatement))
+                throw new UnexpectedTokenException(stack.pop());
+            stack.copyFrom(stackCopy);
             statements.add(statement);
         }
         stack.pop();
-        return new StatementBlock(statements);
+        if(isSwitch)
+            return new SwitchBlock(statements);
+        else
+            return new StatementBlock(statements);
     }
 
-    public Statement parseStatement(TokenStack stack, boolean allowTypeDefinition) throws UnexpectedTokenException {
+    public Statement parseStatement(TokenStack stack, boolean allowTypeDefinition, boolean allowCase) throws UnexpectedTokenException {
         TokenStack stackCopy = stack.trim().clone();
         switch (stackCopy.peek().getType()) {
             case OPEN_CURLY_BRACKET: {
-                StatementBlock block = parseStatementBlock(stackCopy);
+                StatementBlock block = parseStatementBlock(stackCopy, false);
                 stack.copyFrom(stackCopy);
                 return block;
             }
             case IF: {
                 IfStatement statement = controlStatementParser.parseIfStatement(stackCopy);
+                stack.copyFrom(stackCopy);
+                return statement;
+            }
+            case SWITCH: {
+                SwitchStatement statement = controlStatementParser.parseSwitchStatement(stackCopy);
                 stack.copyFrom(stackCopy);
                 return statement;
             }
@@ -85,6 +97,28 @@ public class StatementParser {
                 stack.copyFrom(stackCopy);
                 return new AssertStatement(assertion);
             }
+            case BREAK: {
+                stackCopy.pop();
+                String label = null;
+                if(stackCopy.trim().peek().getType() == TokenType.NAME)
+                    label = stackCopy.pop().getValue();
+                if(stackCopy.trim().peek().getType() != TokenType.STATEMENT_END)
+                    throw new UnexpectedTokenException(stackCopy.pop());
+                stackCopy.pop();
+                stack.copyFrom(stackCopy);
+                return new BreakStatement(label);
+            }
+            case CONTINUE: {
+                stackCopy.pop();
+                String label = null;
+                if(stackCopy.trim().peek().getType() == TokenType.NAME)
+                    label = stackCopy.pop().getValue();
+                if(stackCopy.trim().peek().getType() != TokenType.STATEMENT_END)
+                    throw new UnexpectedTokenException(stackCopy.pop());
+                stackCopy.pop();
+                stack.copyFrom(stackCopy);
+                return new ContinueStatement(label);
+            }
             case THROW: {
                 stackCopy.pop();
                 Expression value = parser.getExpressionParser().parseExpression(stackCopy);
@@ -94,8 +128,41 @@ public class StatementParser {
                 stack.copyFrom(stackCopy);
                 return new ThrowStatement(value);
             }
+            case CASE: {
+                if(!allowCase)
+                    throw new UnexpectedTokenException(stackCopy.pop());
+                stackCopy.pop();
+                Expression value = parser.getExpressionParser().parseExpression(stackCopy);
+                if(stackCopy.trim().peek().getType() != TokenType.COLON)
+                    throw new UnexpectedTokenException(stackCopy.pop());
+                stackCopy.pop();
+                stack.copyFrom(stackCopy);
+                return new CaseStatement(value);
+            }
+            case DEFAULT: {
+                if(!allowCase)
+                    throw new UnexpectedTokenException(stackCopy.pop());
+                stackCopy.pop();
+                if(stackCopy.trim().peek().getType() != TokenType.COLON)
+                    throw new UnexpectedTokenException(stackCopy.pop());
+                stackCopy.pop();
+                stack.copyFrom(stackCopy);
+                return new CaseStatement(null);
+            }
         }
         UnexpectedTokenException ex;
+        stackCopy = stack.clone();
+        try {
+            if(stackCopy.trim().peek().getType() != TokenType.NAME)
+                throw new UnexpectedTokenException(stackCopy.pop());
+            String name = stackCopy.pop().getValue();
+            if(stackCopy.trim().peek().getType() != TokenType.COLON)
+                throw new UnexpectedTokenException(stackCopy.pop());
+            stack.copyFrom(stackCopy);
+            return new LabelStatement(name);
+        } catch (UnexpectedTokenException nextEx) {
+            ex = nextEx;
+        }
         stackCopy = stack.clone();
         try {
             VariableDefinition vd = parser.getGeneralParser().parseVariableDefinition(stackCopy, true, true, false);
@@ -105,7 +172,7 @@ public class StatementParser {
             stack.copyFrom(stackCopy);
             return vd;
         } catch (UnexpectedTokenException nextEx) {
-            ex = nextEx;
+            ex = nextEx.getToken().getPos() > ex.getToken().getPos() ? nextEx : ex;
         }
         stackCopy = stack.clone();
         try {

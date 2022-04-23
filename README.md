@@ -31,9 +31,9 @@ public class ExpressionExample {
 
 ## TODO
 These are features that are known to be missing
-- switch
 - Native and Abstract Methods
 - Interfaces
+- Ternary Operator
 - Type casting
 - Generic type definition for classes and methods
 - Instance and static initializers

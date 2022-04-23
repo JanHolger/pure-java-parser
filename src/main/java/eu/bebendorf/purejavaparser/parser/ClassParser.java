@@ -419,7 +419,7 @@ public class ClassParser {
                 throwables.add(parser.getGeneralParser().parseType(stackCopy, false, false, false));
             }
         }
-        StatementBlock body = parser.getStatementParser().parseStatementBlock(stackCopy);
+        StatementBlock body = parser.getStatementParser().parseStatementBlock(stackCopy, false);
         stack.copyFrom(stackCopy);
         return new ConstructorDefinition(annotations, modifiers, parameters, throwables, body);
     }
@@ -440,7 +440,7 @@ public class ClassParser {
                 throwables.add(parser.getGeneralParser().parseType(stackCopy, false, false, false));
             }
         }
-        StatementBlock body = parser.getStatementParser().parseStatementBlock(stackCopy);
+        StatementBlock body = parser.getStatementParser().parseStatementBlock(stackCopy, false);
         stack.copyFrom(stackCopy);
         return new MethodDefinition(annotations, modifiers, type, variable, parameters, throwables, body);
     }

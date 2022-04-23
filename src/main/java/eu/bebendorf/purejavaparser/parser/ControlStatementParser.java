@@ -36,6 +36,21 @@ public class ControlStatementParser {
         return new IfStatement(condition, ensureBlock(statement), ensureBlock(elseStatement));
     }
 
+    public SwitchStatement parseSwitchStatement(TokenStack stack) throws UnexpectedTokenException {
+        if(stack.trim().peek().getType() != TokenType.SWITCH)
+            throw new UnexpectedTokenException(stack.pop());
+        stack.pop();
+        if(stack.trim().peek().getType() != TokenType.GROUP_START)
+            throw new UnexpectedTokenException(stack.pop());
+        stack.pop();
+        Expression value = parser.getExpressionParser().parseExpression(stack);
+        if(stack.trim().peek().getType() != TokenType.GROUP_END)
+            throw new UnexpectedTokenException(stack.pop());
+        stack.pop();
+        SwitchBlock body = (SwitchBlock) parser.getStatementParser().parseStatementBlock(stack, true);
+        return new SwitchStatement(value, body);
+    }
+
     public WhileStatement parseWhileStatement(TokenStack stack) throws UnexpectedTokenException {
         if(stack.trim().peek().getType() != TokenType.WHILE)
             throw new UnexpectedTokenException(stack.pop());
@@ -89,7 +104,7 @@ public class ControlStatementParser {
             }
             stack.pop();
         }
-        StatementBlock tryStatement = parser.getStatementParser().parseStatementBlock(stack);
+        StatementBlock tryStatement = parser.getStatementParser().parseStatementBlock(stack, false);
         List<CatchStatement> catchStatements = new ArrayList<>();
         while (stack.trim().peek().getType() == TokenType.CATCH) {
             stack.pop();
@@ -106,13 +121,13 @@ public class ControlStatementParser {
             if(stack.trim().peek().getType() != TokenType.GROUP_END)
                 throw new UnexpectedTokenException(stack.pop());
             stack.pop();
-            StatementBlock statement = parser.getStatementParser().parseStatementBlock(stack);
+            StatementBlock statement = parser.getStatementParser().parseStatementBlock(stack, false);
             catchStatements.add(new CatchStatement(types, variable, statement));
         }
         StatementBlock finallyStatement = null;
         if(stack.trim().peek().getType() == TokenType.FINALLY) {
             stack.pop();
-            finallyStatement = parser.getStatementParser().parseStatementBlock(stack);
+            finallyStatement = parser.getStatementParser().parseStatementBlock(stack, false);
         }
         return new TryStatement(resources, tryStatement, catchStatements, finallyStatement);
     }
@@ -122,7 +137,7 @@ public class ControlStatementParser {
             stack.pop();
             return null;
         }
-        return parser.getStatementParser().parseStatement(stack, false);
+        return parser.getStatementParser().parseStatement(stack, false, false);
     }
 
     private StatementBlock ensureBlock(Statement statement) {

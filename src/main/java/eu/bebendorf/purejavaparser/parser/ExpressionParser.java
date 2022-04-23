@@ -48,7 +48,7 @@ public class ExpressionParser {
         stackCopy.pop();
         StatementBlock body;
         if(stackCopy.trim().peek().getType() == TokenType.OPEN_CURLY_BRACKET) {
-            body = parser.getStatementParser().parseStatementBlock(stackCopy);
+            body = parser.getStatementParser().parseStatementBlock(stackCopy, false);
         } else {
             Expression expression = parseExpression(stackCopy);
             List<Statement> statements = new ArrayList<>();

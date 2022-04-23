@@ -11,10 +11,10 @@ import java.util.stream.Collectors;
 @Getter
 public class StatementBlock implements Statement {
 
-    List<Statement> statements;
+    protected List<Statement> statements;
 
     public String toString() {
-        return "{\n" + statements.stream().map(s -> PrintUtil.prefixLines(s.toString(), "    ") + (s.hasStatementEnd() ? ";" : "")).collect(Collectors.joining("\n")) + (statements.size() == 0 ? "    " : "") + "\n}";
+        return "{\n" + statements.stream().map(s -> PrintUtil.prefixLines(s.toFullString(), "    ")).collect(Collectors.joining("\n")) + (statements.size() == 0 ? "    " : "") + "\n}";
     }
 
 }
