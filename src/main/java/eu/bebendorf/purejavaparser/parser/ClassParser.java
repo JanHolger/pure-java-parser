@@ -2,6 +2,7 @@ package eu.bebendorf.purejavaparser.parser;
 
 import eu.bebendorf.purejavaparser.PureJavaParser;
 import eu.bebendorf.purejavaparser.ast.*;
+import eu.bebendorf.purejavaparser.ast.expression.ArgumentList;
 import eu.bebendorf.purejavaparser.ast.statement.StatementBlock;
 import eu.bebendorf.purejavaparser.token.Token;
 import eu.bebendorf.purejavaparser.token.TokenStack;
@@ -28,6 +29,18 @@ public class ClassParser {
     private static final TokenType[] LOCAL_CLASS_MODIFIERS = {
             TokenType.ABSTRACT,
             TokenType.FINAL,
+            TokenType.STRICTFP
+    };
+
+    private static final TokenType[] NORMAL_ENUM_MODIFIERS = {
+            TokenType.PRIVATE,
+            TokenType.PUBLIC,
+            TokenType.PROTECTED,
+            TokenType.STATIC,
+            TokenType.STRICTFP
+    };
+
+    private static final TokenType[] LOCAL_ENUM_MODIFIERS = {
             TokenType.STRICTFP
     };
 
@@ -114,6 +127,14 @@ public class ClassParser {
         } catch (UnexpectedTokenException nextEx) {
             ex = nextEx;
         }
+        stackCopy = stack.clone();
+        try {
+            EnumDefinition enumDefinition = parseEnumDefinition(stackCopy, local);
+            stack.copyFrom(stackCopy);
+            return enumDefinition;
+        } catch (UnexpectedTokenException nextEx) {
+            ex = nextEx.getToken().getPos() > ex.getToken().getPos() ? nextEx : ex;
+        }
         throw ex;
     }
 
@@ -141,15 +162,53 @@ public class ClassParser {
                 interfaces.add(parser.getGeneralParser().parseType(stackCopy, true, false, false));
             }
         }
-        ClassBody body = parseClassBody(stackCopy, name, local, false);
+        ClassBody body = parseClassBody(stackCopy, name, local, false, false);
         stack.copyFrom(stackCopy);
         return new ClassDefinition(annotations, modifiers, name, superClass, interfaces, body);
     }
 
-    public ClassBody parseClassBody(TokenStack stack, String className, boolean local, boolean anonymous) throws UnexpectedTokenException {
+    private EnumDefinition parseEnumDefinition(TokenStack stack, boolean local) throws UnexpectedTokenException {
+        TokenStack stackCopy = stack.trim().clone();
+        List<Annotation> annotations = parser.getGeneralParser().parseAnnotations(stackCopy);
+        ClassModifiers modifiers = parseClassModifiers(stackCopy, local ? LOCAL_ENUM_MODIFIERS : NORMAL_ENUM_MODIFIERS);
+        if(stackCopy.trim().peek().getType() != TokenType.ENUM)
+            throw new UnexpectedTokenException(stackCopy.pop());
+        stackCopy.pop();
+        if(stackCopy.trim().peek().getType() != TokenType.NAME)
+            throw new UnexpectedTokenException(stackCopy.pop());
+        String name = stackCopy.pop().getValue();
+        List<Type> interfaces = new ArrayList<>();
+        if(stackCopy.trim().peek().getType() == TokenType.IMPLEMENTS) {
+            stackCopy.pop();
+            interfaces.add(parser.getGeneralParser().parseType(stackCopy, true, false, false));
+            while (stackCopy.trim().peek().getType() == TokenType.SEPERATOR) {
+                stackCopy.pop();
+                interfaces.add(parser.getGeneralParser().parseType(stackCopy, true, false, false));
+            }
+        }
+        EnumBody body = (EnumBody) parseClassBody(stackCopy, name, local, false, true);
+        stack.copyFrom(stackCopy);
+        return new EnumDefinition(annotations, modifiers, name, interfaces, body);
+    }
+
+    public ClassBody parseClassBody(TokenStack stack, String className, boolean local, boolean anonymous, boolean isEnum) throws UnexpectedTokenException {
         if(stack.trim().peek().getType() != TokenType.OPEN_CURLY_BRACKET)
             throw new UnexpectedTokenException(stack.pop());
         stack.pop();
+        List<EnumValue> enumValues = isEnum ? new ArrayList<>() : null;
+        if(isEnum && stack.trim().peek().getType() != TokenType.CLOSE_CURLY_BRACKET) {
+            while (stack.trim().peek().getType() != TokenType.STATEMENT_END) {
+                if(enumValues.size() > 0) {
+                    if(stack.trim().peek().getType() != TokenType.SEPERATOR)
+                        throw new UnexpectedTokenException(stack.pop());
+                    stack.pop();
+                }
+                Variable variable = parser.getGeneralParser().parseVariable(stack);
+                ArgumentList arguments = parser.getExpressionParser().parseArgumentList(stack);
+                enumValues.add(new EnumValue(variable, arguments));
+            }
+            stack.pop();
+        }
         List<FieldDefinition> fields = new ArrayList<>();
         List<MethodDefinition> methods = new ArrayList<>();
         List<ConstructorDefinition> constructors = new ArrayList<>();
@@ -191,7 +250,10 @@ public class ClassParser {
             }
         }
         stack.pop();
-        return new ClassBody(fields, constructors, methods, innerClasses);
+        if(isEnum)
+            return new EnumBody(enumValues, fields, constructors, methods, innerClasses);
+        else
+            return new ClassBody(fields, constructors, methods, innerClasses);
     }
 
     private ClassModifiers parseClassModifiers(TokenStack stack, TokenType... allowed) throws UnexpectedTokenException {

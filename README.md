@@ -33,7 +33,6 @@ public class ExpressionExample {
 These are features that are known to be missing
 - switch
 - Native and Abstract Methods
-- Enums
 - Interfaces
 - Type casting
 - Generic type definition for classes and methods

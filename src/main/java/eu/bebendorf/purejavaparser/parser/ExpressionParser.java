@@ -238,7 +238,7 @@ public class ExpressionParser {
         } else {
             argumentList = parseArgumentList(stack);
             if(stack.trim().peek().getType() == TokenType.OPEN_CURLY_BRACKET)
-                anonymousBody = parser.getClassParser().parseClassBody(stack, null, true, true);
+                anonymousBody = parser.getClassParser().parseClassBody(stack, null, true, true, false);
         }
         return new New(type, arraySizes, arrayInitializer, argumentList, anonymousBody);
     }
@@ -380,7 +380,7 @@ public class ExpressionParser {
         }
     }
 
-    private ArgumentList parseArgumentList(TokenStack stack) throws UnexpectedTokenException {
+    public ArgumentList parseArgumentList(TokenStack stack) throws UnexpectedTokenException {
         if(stack.trim().peek().getType() != TokenType.GROUP_START)
             throw new UnexpectedTokenException(stack.pop());
         stack.pop();

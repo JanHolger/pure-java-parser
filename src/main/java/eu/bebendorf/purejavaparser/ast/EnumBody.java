@@ -1,29 +1,25 @@
 package eu.bebendorf.purejavaparser.ast;
 
 import eu.bebendorf.purejavaparser.util.PrintUtil;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.experimental.FieldDefaults;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
-@AllArgsConstructor
 @Getter
-@FieldDefaults(level = AccessLevel.PROTECTED)
-public class ClassBody {
+public class EnumBody extends ClassBody {
 
-    List<FieldDefinition> fields;
-    List<ConstructorDefinition> constructors;
-    List<MethodDefinition> methods;
-    List<TypeDefinition> innerClasses;
+    final List<EnumValue> values;
 
-    public String toString() {
-        return toString(null);
+    public EnumBody(List<EnumValue> values, List<FieldDefinition> fields, List<ConstructorDefinition> constructors, List<MethodDefinition> methods, List<TypeDefinition> innerClasses) {
+        super(fields, constructors, methods, innerClasses);
+        this.values = values;
     }
 
     public String toString(String className) {
         StringBuilder sb = new StringBuilder("{\n\n");
+        sb.append(PrintUtil.prefixLines(values.stream().map(Objects::toString).collect(Collectors.joining(",\n")) + ";", "    ")).append("\n\n");
         if(fields.size() > 0) {
             for(FieldDefinition d : fields)
                 sb.append(PrintUtil.prefixLines(d.toString() + ";", "    ")).append("\n");
