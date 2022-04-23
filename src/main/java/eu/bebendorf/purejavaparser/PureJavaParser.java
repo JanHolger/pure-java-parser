@@ -1,6 +1,6 @@
 package eu.bebendorf.purejavaparser;
 
-import eu.bebendorf.purejavaparser.ast.ClassFileDefinition;
+import eu.bebendorf.purejavaparser.ast.type.ClassFileDefinition;
 import eu.bebendorf.purejavaparser.exception.UnexpectedCharacterException;
 import eu.bebendorf.purejavaparser.parser.*;
 import eu.bebendorf.purejavaparser.token.TokenStack;

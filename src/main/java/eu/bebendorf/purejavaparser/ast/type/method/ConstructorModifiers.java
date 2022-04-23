@@ -1,4 +1,4 @@
-package eu.bebendorf.purejavaparser.ast;
+package eu.bebendorf.purejavaparser.ast.type.method;
 
 import java.util.ArrayList;
 import java.util.List;

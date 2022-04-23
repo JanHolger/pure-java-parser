@@ -1,5 +1,7 @@
-package eu.bebendorf.purejavaparser.ast;
+package eu.bebendorf.purejavaparser.ast.type;
 
+import eu.bebendorf.purejavaparser.ast.Annotation;
+import eu.bebendorf.purejavaparser.ast.Type;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -8,13 +10,13 @@ import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Getter
-public class EnumDefinition implements TypeDefinition {
+public class InterfaceDefinition implements TypeDefinition {
 
     List<Annotation> annotations;
     ClassModifiers modifiers;
     String name;
     List<Type> interfaces;
-    EnumBody body;
+    InterfaceBody body;
 
     public String toString() {
         String modifiers = this.modifiers.toString();
@@ -23,10 +25,10 @@ public class EnumDefinition implements TypeDefinition {
         StringBuilder sb = new StringBuilder();
         for(Annotation a : annotations)
             sb.append(a).append("\n");
-        sb.append(modifiers).append("enum ").append(name).append(" ");
+        sb.append(modifiers).append("interface ").append(name).append(" ");
         if(interfaces.size() > 0)
-            sb.append("implements ").append(interfaces.stream().map(Object::toString).collect(Collectors.joining(", "))).append(" ");
-        return sb.append(body.toString(name)).toString();
+            sb.append("extends ").append(interfaces.stream().map(Object::toString).collect(Collectors.joining(", "))).append(" ");
+        return sb.append(body).toString();
     }
 
 }

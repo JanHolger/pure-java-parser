@@ -1,4 +1,4 @@
-package eu.bebendorf.purejavaparser.ast;
+package eu.bebendorf.purejavaparser.ast.type;
 
 import eu.bebendorf.purejavaparser.ast.statement.Statement;
 

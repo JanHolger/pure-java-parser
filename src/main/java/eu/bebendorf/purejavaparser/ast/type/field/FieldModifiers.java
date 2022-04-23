@@ -1,17 +1,17 @@
-package eu.bebendorf.purejavaparser.ast;
+package eu.bebendorf.purejavaparser.ast.type.field;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ClassModifiers {
+public class FieldModifiers {
 
     boolean staticModifier;
     boolean privateModifier;
     boolean publicModifier;
     boolean protectedModifier;
     boolean finalModifier;
-    boolean strictfpModifier;
-    boolean abstractModifier;
+    boolean volatileModifier;
+    boolean transientModifier;
 
     public void setStatic(boolean value) {
         this.staticModifier = value;
@@ -33,12 +33,12 @@ public class ClassModifiers {
         this.finalModifier = value;
     }
 
-    public void setStrictfp(boolean value) {
-        this.strictfpModifier = value;
+    public void setVolatile(boolean value) {
+        this.volatileModifier = value;
     }
 
-    public void setAbstract(boolean value) {
-        this.abstractModifier = value;
+    public void setTransient(boolean value) {
+        this.transientModifier = value;
     }
 
     public boolean isStatic() {
@@ -65,12 +65,12 @@ public class ClassModifiers {
         return finalModifier;
     }
 
-    public boolean isStrictfp() {
-        return strictfpModifier;
+    public boolean isVolatile() {
+        return volatileModifier;
     }
 
-    public boolean isAbstract() {
-        return abstractModifier;
+    public boolean isTransient() {
+        return transientModifier;
     }
 
     public String toString() {
@@ -85,10 +85,10 @@ public class ClassModifiers {
             modifiers.add("static");
         if(finalModifier)
             modifiers.add("final");
-        if(abstractModifier)
-            modifiers.add("abstract");
-        if(strictfpModifier)
-            modifiers.add("strictfp");
+        if(transientModifier)
+            modifiers.add("transient");
+        if(volatileModifier)
+            modifiers.add("volatile");
         return String.join(" ", modifiers);
     }
 

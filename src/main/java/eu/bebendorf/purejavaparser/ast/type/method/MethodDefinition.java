@@ -1,5 +1,8 @@
-package eu.bebendorf.purejavaparser.ast;
+package eu.bebendorf.purejavaparser.ast.type.method;
 
+import eu.bebendorf.purejavaparser.ast.Annotation;
+import eu.bebendorf.purejavaparser.ast.Type;
+import eu.bebendorf.purejavaparser.ast.Variable;
 import eu.bebendorf.purejavaparser.ast.statement.StatementBlock;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -26,10 +29,14 @@ public class MethodDefinition {
         StringBuilder sb = new StringBuilder();
         for(Annotation a : annotations)
             sb.append(a).append("\n");
-        sb.append(modifiers).append(type).append(" ").append(variable).append(parameters).append(" ");
+        sb.append(modifiers).append(type).append(" ").append(variable).append(parameters);
         if(throwables.size() > 0)
-            sb.append("throws ").append(throwables.stream().map(Object::toString).collect(Collectors.joining(", "))).append(" ");
-        return sb.append(body).toString();
+            sb.append(" throws ").append(throwables.stream().map(Object::toString).collect(Collectors.joining(", ")));
+        if(body != null)
+            sb.append(" ").append(body);
+        else
+            sb.append(";");
+        return sb.toString();
     }
 
 }

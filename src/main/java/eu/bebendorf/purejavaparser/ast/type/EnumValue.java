@@ -1,5 +1,6 @@
-package eu.bebendorf.purejavaparser.ast;
+package eu.bebendorf.purejavaparser.ast.type;
 
+import eu.bebendorf.purejavaparser.ast.Variable;
 import eu.bebendorf.purejavaparser.ast.expression.ArgumentList;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

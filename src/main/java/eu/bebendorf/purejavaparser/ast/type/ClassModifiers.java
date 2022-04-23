@@ -1,9 +1,9 @@
-package eu.bebendorf.purejavaparser.ast;
+package eu.bebendorf.purejavaparser.ast.type;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MethodModifiers {
+public class ClassModifiers {
 
     boolean staticModifier;
     boolean privateModifier;
@@ -12,8 +12,6 @@ public class MethodModifiers {
     boolean finalModifier;
     boolean strictfpModifier;
     boolean abstractModifier;
-    boolean synchronizedModifier;
-    boolean nativeModifier;
 
     public void setStatic(boolean value) {
         this.staticModifier = value;
@@ -41,14 +39,6 @@ public class MethodModifiers {
 
     public void setAbstract(boolean value) {
         this.abstractModifier = value;
-    }
-
-    public void setSynchronized(boolean value) {
-        this.synchronizedModifier = value;
-    }
-
-    public void setNative(boolean value) {
-        this.nativeModifier = value;
     }
 
     public boolean isStatic() {
@@ -83,14 +73,6 @@ public class MethodModifiers {
         return abstractModifier;
     }
 
-    public boolean isSynchronized() {
-        return synchronizedModifier;
-    }
-
-    public boolean isNative() {
-        return nativeModifier;
-    }
-
     public String toString() {
         List<String> modifiers = new ArrayList<>();
         if(publicModifier)
@@ -105,10 +87,6 @@ public class MethodModifiers {
             modifiers.add("final");
         if(abstractModifier)
             modifiers.add("abstract");
-        if(nativeModifier)
-            modifiers.add("native");
-        if(synchronizedModifier)
-            modifiers.add("synchronized");
         if(strictfpModifier)
             modifiers.add("strictfp");
         return String.join(" ", modifiers);

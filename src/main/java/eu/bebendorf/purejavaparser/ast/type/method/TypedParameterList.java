@@ -1,4 +1,4 @@
-package eu.bebendorf.purejavaparser.ast;
+package eu.bebendorf.purejavaparser.ast.type.method;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

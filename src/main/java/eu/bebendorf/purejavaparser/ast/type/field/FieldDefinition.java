@@ -1,5 +1,7 @@
-package eu.bebendorf.purejavaparser.ast;
+package eu.bebendorf.purejavaparser.ast.type.field;
 
+import eu.bebendorf.purejavaparser.ast.Annotation;
+import eu.bebendorf.purejavaparser.ast.VariableDefinition;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

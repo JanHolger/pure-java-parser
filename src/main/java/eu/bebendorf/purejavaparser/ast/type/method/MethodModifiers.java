@@ -1,17 +1,20 @@
-package eu.bebendorf.purejavaparser.ast;
+package eu.bebendorf.purejavaparser.ast.type.method;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class FieldModifiers {
+public class MethodModifiers {
 
     boolean staticModifier;
     boolean privateModifier;
     boolean publicModifier;
     boolean protectedModifier;
     boolean finalModifier;
-    boolean volatileModifier;
-    boolean transientModifier;
+    boolean strictfpModifier;
+    boolean abstractModifier;
+    boolean synchronizedModifier;
+    boolean nativeModifier;
+    boolean defaultModifier;
 
     public void setStatic(boolean value) {
         this.staticModifier = value;
@@ -33,12 +36,24 @@ public class FieldModifiers {
         this.finalModifier = value;
     }
 
-    public void setVolatile(boolean value) {
-        this.volatileModifier = value;
+    public void setStrictfp(boolean value) {
+        this.strictfpModifier = value;
     }
 
-    public void setTransient(boolean value) {
-        this.transientModifier = value;
+    public void setAbstract(boolean value) {
+        this.abstractModifier = value;
+    }
+
+    public void setSynchronized(boolean value) {
+        this.synchronizedModifier = value;
+    }
+
+    public void setNative(boolean value) {
+        this.nativeModifier = value;
+    }
+
+    public void setDefault(boolean value) {
+        this.defaultModifier = value;
     }
 
     public boolean isStatic() {
@@ -65,12 +80,24 @@ public class FieldModifiers {
         return finalModifier;
     }
 
-    public boolean isVolatile() {
-        return volatileModifier;
+    public boolean isStrictfp() {
+        return strictfpModifier;
     }
 
-    public boolean isTransient() {
-        return transientModifier;
+    public boolean isAbstract() {
+        return abstractModifier;
+    }
+
+    public boolean isSynchronized() {
+        return synchronizedModifier;
+    }
+
+    public boolean isNative() {
+        return nativeModifier;
+    }
+
+    public boolean isDefault() {
+        return defaultModifier;
     }
 
     public String toString() {
@@ -85,10 +112,16 @@ public class FieldModifiers {
             modifiers.add("static");
         if(finalModifier)
             modifiers.add("final");
-        if(transientModifier)
-            modifiers.add("transient");
-        if(volatileModifier)
-            modifiers.add("volatile");
+        if(abstractModifier)
+            modifiers.add("abstract");
+        if(nativeModifier)
+            modifiers.add("native");
+        if(synchronizedModifier)
+            modifiers.add("synchronized");
+        if(strictfpModifier)
+            modifiers.add("strictfp");
+        if(defaultModifier)
+            modifiers.add("default");
         return String.join(" ", modifiers);
     }
 

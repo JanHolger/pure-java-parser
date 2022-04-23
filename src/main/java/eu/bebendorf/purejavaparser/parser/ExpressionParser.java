@@ -6,6 +6,7 @@ import eu.bebendorf.purejavaparser.ast.expression.*;
 import eu.bebendorf.purejavaparser.ast.statement.ReturnStatement;
 import eu.bebendorf.purejavaparser.ast.statement.Statement;
 import eu.bebendorf.purejavaparser.ast.statement.StatementBlock;
+import eu.bebendorf.purejavaparser.ast.type.ClassBody;
 import eu.bebendorf.purejavaparser.token.Token;
 import eu.bebendorf.purejavaparser.token.TokenStack;
 import eu.bebendorf.purejavaparser.token.TokenType;
@@ -238,7 +239,7 @@ public class ExpressionParser {
         } else {
             argumentList = parseArgumentList(stack);
             if(stack.trim().peek().getType() == TokenType.OPEN_CURLY_BRACKET)
-                anonymousBody = parser.getClassParser().parseClassBody(stack, null, true, true, false);
+                anonymousBody = (ClassBody) parser.getClassParser().getTypeDefinitionParser().parseTypeBody(stack, null, true, true, false, false);
         }
         return new New(type, arraySizes, arrayInitializer, argumentList, anonymousBody);
     }

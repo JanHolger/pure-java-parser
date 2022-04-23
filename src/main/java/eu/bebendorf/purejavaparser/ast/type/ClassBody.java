@@ -1,25 +1,32 @@
-package eu.bebendorf.purejavaparser.ast;
+package eu.bebendorf.purejavaparser.ast.type;
 
+import eu.bebendorf.purejavaparser.ast.type.field.FieldDefinition;
+import eu.bebendorf.purejavaparser.ast.type.method.ConstructorDefinition;
+import eu.bebendorf.purejavaparser.ast.type.method.MethodDefinition;
 import eu.bebendorf.purejavaparser.util.PrintUtil;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.experimental.FieldDefaults;
 
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
+@AllArgsConstructor
 @Getter
-public class EnumBody extends ClassBody {
+@FieldDefaults(level = AccessLevel.PROTECTED)
+public class ClassBody implements TypeBody {
 
-    final List<EnumValue> values;
+    List<FieldDefinition> fields;
+    List<ConstructorDefinition> constructors;
+    List<MethodDefinition> methods;
+    List<TypeDefinition> innerClasses;
 
-    public EnumBody(List<EnumValue> values, List<FieldDefinition> fields, List<ConstructorDefinition> constructors, List<MethodDefinition> methods, List<TypeDefinition> innerClasses) {
-        super(fields, constructors, methods, innerClasses);
-        this.values = values;
+    public String toString() {
+        return toString(null);
     }
 
     public String toString(String className) {
         StringBuilder sb = new StringBuilder("{\n\n");
-        sb.append(PrintUtil.prefixLines(values.stream().map(Objects::toString).collect(Collectors.joining(",\n")) + ";", "    ")).append("\n\n");
         if(fields.size() > 0) {
             for(FieldDefinition d : fields)
                 sb.append(PrintUtil.prefixLines(d.toString() + ";", "    ")).append("\n");

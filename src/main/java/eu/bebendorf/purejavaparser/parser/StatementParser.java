@@ -4,6 +4,7 @@ import eu.bebendorf.purejavaparser.PureJavaParser;
 import eu.bebendorf.purejavaparser.ast.*;
 import eu.bebendorf.purejavaparser.ast.expression.Expression;
 import eu.bebendorf.purejavaparser.ast.statement.*;
+import eu.bebendorf.purejavaparser.ast.type.TypeDefinition;
 import eu.bebendorf.purejavaparser.token.Token;
 import eu.bebendorf.purejavaparser.token.TokenStack;
 import eu.bebendorf.purejavaparser.token.TokenType;
@@ -188,7 +189,7 @@ public class StatementParser {
         stackCopy = stack.clone();
         if(allowTypeDefinition) {
             try {
-                TypeDefinition typeDefinition = parser.getClassParser().parseTypeDefinition(stackCopy, true);
+                TypeDefinition typeDefinition = parser.getClassParser().getTypeDefinitionParser().parseTypeDefinition(stackCopy, true);
                 stack.copyFrom(stackCopy);
                 return typeDefinition;
             } catch (UnexpectedTokenException nextEx) {
