@@ -12,13 +12,13 @@ import java.util.stream.Collectors;
 public class ConstructorDefinition {
 
     List<Annotation> annotations;
-    MethodModifiers modifiers;
+    ConstructorModifiers modifiers;
     TypedParameterList parameters;
     List<Type> throwables;
     StatementBlock body;
 
     public String toString() {
-        return toString("");
+        return toString(null);
     }
 
     public String toString(String className) {
@@ -28,7 +28,7 @@ public class ConstructorDefinition {
         StringBuilder sb = new StringBuilder();
         for(Annotation a : annotations)
             sb.append(a).append("\n");
-        sb.append(modifiers).append(className).append(parameters).append(" ");
+        sb.append(modifiers).append(className == null ? "" : className).append(parameters).append(" ");
         if(throwables.size() > 0)
             sb.append("throws ").append(throwables.stream().map(Object::toString).collect(Collectors.joining(", "))).append(" ");
         return sb.append(body).toString();

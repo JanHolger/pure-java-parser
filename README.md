@@ -32,7 +32,6 @@ public class ExpressionExample {
 ## TODO
 These are features that are known to be missing
 - switch
-- Constructors
 - Native and Abstract Methods
 - Enums
 - Interfaces

@@ -7,9 +7,6 @@ import eu.bebendorf.purejavaparser.token.Token;
 import eu.bebendorf.purejavaparser.token.TokenStack;
 import eu.bebendorf.purejavaparser.token.TokenType;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -144,17 +141,18 @@ public class ClassParser {
                 interfaces.add(parser.getGeneralParser().parseType(stackCopy, true, false, false));
             }
         }
-        ClassBody body = parseClassBody(stackCopy, local, false);
+        ClassBody body = parseClassBody(stackCopy, name, local, false);
         stack.copyFrom(stackCopy);
         return new ClassDefinition(annotations, modifiers, name, superClass, interfaces, body);
     }
 
-    public ClassBody parseClassBody(TokenStack stack, boolean local, boolean anonymous) throws UnexpectedTokenException {
+    public ClassBody parseClassBody(TokenStack stack, String className, boolean local, boolean anonymous) throws UnexpectedTokenException {
         if(stack.trim().peek().getType() != TokenType.OPEN_CURLY_BRACKET)
             throw new UnexpectedTokenException(stack.pop());
         stack.pop();
         List<FieldDefinition> fields = new ArrayList<>();
         List<MethodDefinition> methods = new ArrayList<>();
+        List<ConstructorDefinition> constructors = new ArrayList<>();
         List<TypeDefinition> innerClasses = new ArrayList<>();
         while (stack.trim().peek().getType() != TokenType.CLOSE_CURLY_BRACKET) {
             UnexpectedTokenException ex;
@@ -165,6 +163,16 @@ public class ClassParser {
                 continue;
             } catch (UnexpectedTokenException nextEx) {
                 ex = nextEx;
+            }
+            if(!anonymous) {
+                s = stack.clone();
+                try {
+                    constructors.add(parseConstructorDefinition(s, className));
+                    stack.copyFrom(s);
+                    continue;
+                } catch (UnexpectedTokenException nextEx) {
+                    ex = nextEx.getToken().getPos() > ex.getToken().getPos() ? nextEx : ex;
+                }
             }
             s = stack.clone();
             try {
@@ -183,7 +191,7 @@ public class ClassParser {
             }
         }
         stack.pop();
-        return new ClassBody(fields, methods, innerClasses);
+        return new ClassBody(fields, constructors, methods, innerClasses);
     }
 
     private ClassModifiers parseClassModifiers(TokenStack stack, TokenType... allowed) throws UnexpectedTokenException {
@@ -330,6 +338,30 @@ public class ClassParser {
         return modifiers;
     }
 
+    public ConstructorDefinition parseConstructorDefinition(TokenStack stack, String className) throws UnexpectedTokenException {
+        TokenStack stackCopy = stack.clone();
+        List<Annotation> annotations = parser.getGeneralParser().parseAnnotations(stackCopy);
+        ConstructorModifiers modifiers = parseConstructorModifiers(stackCopy);
+        TokenStack stackCopy2 = stackCopy.clone();
+        Variable variable = parser.getGeneralParser().parseVariable(stackCopy2);
+        if(!variable.getName().equals(className))
+            throw new UnexpectedTokenException(stackCopy.trim().pop());
+        stackCopy.copyFrom(stackCopy2);
+        TypedParameterList parameters = parseTypedParameterList(stackCopy);
+        List<Type> throwables = new ArrayList<>();
+        if(stackCopy.trim().peek().getType() == TokenType.THROWS) {
+            stackCopy.pop();
+            throwables.add(parser.getGeneralParser().parseType(stackCopy, false, false, false));
+            while (stackCopy.trim().peek().getType() == TokenType.SEPERATOR) {
+                stackCopy.pop();
+                throwables.add(parser.getGeneralParser().parseType(stackCopy, false, false, false));
+            }
+        }
+        StatementBlock body = parser.getStatementParser().parseStatementBlock(stackCopy);
+        stack.copyFrom(stackCopy);
+        return new ConstructorDefinition(annotations, modifiers, parameters, throwables, body);
+    }
+
     public MethodDefinition parseMethodDefinition(TokenStack stack) throws UnexpectedTokenException {
         TokenStack stackCopy = stack.clone();
         List<Annotation> annotations = parser.getGeneralParser().parseAnnotations(stackCopy);
@@ -417,6 +449,40 @@ public class ClassParser {
                         throw new UnexpectedTokenException(stack.pop());
                     stack.pop();
                     modifiers.setNative(true);
+                    break;
+                }
+                default: {
+                    break loop;
+                }
+            }
+        }
+        return modifiers;
+    }
+
+    private ConstructorModifiers parseConstructorModifiers(TokenStack stack) throws UnexpectedTokenException {
+        ConstructorModifiers modifiers = new ConstructorModifiers();
+        loop:
+        while (true) {
+            switch (stack.trim().peek().getType()) {
+                case PRIVATE: {
+                    if (modifiers.hasAccessModifier())
+                        throw new UnexpectedTokenException(stack.pop());
+                    stack.pop();
+                    modifiers.setPrivate(true);
+                    break;
+                }
+                case PUBLIC: {
+                    if (modifiers.hasAccessModifier())
+                        throw new UnexpectedTokenException(stack.pop());
+                    stack.pop();
+                    modifiers.setPublic(true);
+                    break;
+                }
+                case PROTECTED: {
+                    if (modifiers.hasAccessModifier())
+                        throw new UnexpectedTokenException(stack.pop());
+                    stack.pop();
+                    modifiers.setProtected(true);
                     break;
                 }
                 default: {

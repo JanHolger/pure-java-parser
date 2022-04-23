@@ -1,6 +1,5 @@
 package eu.bebendorf.purejavaparser.ast;
 
-import eu.bebendorf.purejavaparser.util.PrintUtil;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -30,7 +29,7 @@ public class ClassDefinition implements TypeDefinition {
             sb.append("extends ").append(superClass).append(" ");
         if(interfaces.size() > 0)
             sb.append("implements ").append(interfaces.stream().map(Object::toString).collect(Collectors.joining(", "))).append(" ");
-        return sb.append(body).toString();
+        return sb.append(body.toString(name)).toString();
     }
 
 }

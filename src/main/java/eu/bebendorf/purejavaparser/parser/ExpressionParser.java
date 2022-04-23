@@ -238,7 +238,7 @@ public class ExpressionParser {
         } else {
             argumentList = parseArgumentList(stack);
             if(stack.trim().peek().getType() == TokenType.OPEN_CURLY_BRACKET)
-                anonymousBody = parser.getClassParser().parseClassBody(stack, true, true);
+                anonymousBody = parser.getClassParser().parseClassBody(stack, null, true, true);
         }
         return new New(type, arraySizes, arrayInitializer, argumentList, anonymousBody);
     }
