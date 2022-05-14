@@ -1,27 +1,48 @@
 package eu.bebendorf.purejavaparser.parser;
 
 import eu.bebendorf.purejavaparser.PureJavaParser;
-import eu.bebendorf.purejavaparser.ast.Annotation;
+import eu.bebendorf.purejavaparser.ast.*;
 import eu.bebendorf.purejavaparser.ast.expression.ArrayInitializer;
 import eu.bebendorf.purejavaparser.ast.expression.Expression;
-import eu.bebendorf.purejavaparser.ast.Type;
-import eu.bebendorf.purejavaparser.ast.Variable;
-import eu.bebendorf.purejavaparser.ast.VariableDefinition;
 import eu.bebendorf.purejavaparser.ast.expression.NullLiteral;
+import eu.bebendorf.purejavaparser.ast.type.GenericDefinition;
+import eu.bebendorf.purejavaparser.ast.type.GenericDefinitionList;
 import eu.bebendorf.purejavaparser.token.Token;
 import eu.bebendorf.purejavaparser.token.TokenStack;
 import eu.bebendorf.purejavaparser.token.TokenType;
 import lombok.AllArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @AllArgsConstructor
 public class GeneralParser {
 
     PureJavaParser parser;
+
+    public GenericDefinitionList parseGenericDefinitions(TokenStack stack) throws UnexpectedTokenException {
+        TokenStack stackCopy = stack.trim().clone();
+        if(!stackCopy.peek().is(TokenType.RELATIONAL_OP, "<"))
+            throw new UnexpectedTokenException(stackCopy.pop());
+        stackCopy.pop();
+        List<GenericDefinition> types = new ArrayList<>();
+        while (!stackCopy.trim().peek().is(TokenType.RELATIONAL_OP, ">")) {
+            if(types.size() > 0) {
+                if(stackCopy.peek().getType() != TokenType.SEPERATOR)
+                    throw new UnexpectedTokenException(stackCopy.pop());
+                stackCopy.pop();
+            }
+            Variable v = parseVariable(stackCopy);
+            Type extend = null;
+            if(stackCopy.trim().peek().getType() == TokenType.EXTENDS) {
+                stackCopy.pop();
+                extend = parseType(stackCopy, true, false, false);
+            }
+            types.add(new GenericDefinition(v.getName(), extend));
+        }
+        stackCopy.pop();
+        stack.copyFrom(stackCopy);
+        return new GenericDefinitionList(types);
+    }
 
     public Type parseType(TokenStack stack, boolean allowGeneric, boolean allowArray, boolean allowVarArgs) throws UnexpectedTokenException {
         TokenStack stackCopy = stack.trim().clone();
@@ -35,17 +56,27 @@ public class GeneralParser {
                 throw new UnexpectedTokenException(stackCopy.pop());
             name.add(stackCopy.pop().getValue());
         }
-        List<Type> genericTypes = new ArrayList<>();
+        List<GenericType> genericTypes = new ArrayList<>();
         int arrayDepth = 0;
         boolean varArgs = false;
         if(allowGeneric) {
-            if(stackCopy.trim().peek().is(TokenType.COMPARISON_OP, "<")) {
+            if(stackCopy.trim().peek().is(TokenType.RELATIONAL_OP, "<")) {
                 stackCopy.pop();
-                while (!stackCopy.trim().peek().is(TokenType.COMPARISON_OP, ">")) {
+                while (!stackCopy.trim().peek().is(TokenType.RELATIONAL_OP, ">")) {
                     if(genericTypes.size() > 0) {
                         if(stackCopy.peek().getType() != TokenType.SEPERATOR)
                             throw new UnexpectedTokenException(stackCopy.pop());
                         stackCopy.pop();
+                    }
+                    if(stackCopy.trim().peek().getType() == TokenType.TERNARY_OP) {
+                        stackCopy.pop();
+                        Type extend = null;
+                        if(stackCopy.trim().peek().getType() == TokenType.EXTENDS) {
+                            stackCopy.pop();
+                            extend = parseType(stackCopy, true, false, false);
+                        }
+                        genericTypes.add(new GenericDefinition("?", extend));
+                        continue;
                     }
                     genericTypes.add(parseType(stackCopy, true, true, false));
                 }
@@ -69,7 +100,7 @@ public class GeneralParser {
             }
         }
         stack.copyFrom(stackCopy);
-        return new Type(name, genericTypes, arrayDepth, varArgs);
+        return new Type(name, genericTypes, null, arrayDepth, varArgs);
     }
 
     public Variable parseVariable(TokenStack stack) throws UnexpectedTokenException {
@@ -97,7 +128,7 @@ public class GeneralParser {
                     throw new UnexpectedTokenException(stackCopy.pop());
                 arrayDepth++;
             }
-            type = new Type(type.getName(), type.getGenericTypes(), type.getArrayDepth() + arrayDepth, false);
+            type = new Type(type.getName(), type.getGenericTypes(), null, type.getArrayDepth() + arrayDepth, false);
         }
         Expression initializer = null;
         if(stackCopy.trim().peek().getType() == TokenType.ASSIGN_OP) {

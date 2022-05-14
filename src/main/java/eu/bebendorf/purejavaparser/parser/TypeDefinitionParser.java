@@ -3,6 +3,7 @@ package eu.bebendorf.purejavaparser.parser;
 import eu.bebendorf.purejavaparser.PureJavaParser;
 import eu.bebendorf.purejavaparser.ast.*;
 import eu.bebendorf.purejavaparser.ast.expression.ArgumentList;
+import eu.bebendorf.purejavaparser.ast.statement.StatementBlock;
 import eu.bebendorf.purejavaparser.ast.type.*;
 import eu.bebendorf.purejavaparser.ast.type.field.FieldDefinition;
 import eu.bebendorf.purejavaparser.ast.type.method.ConstructorDefinition;
@@ -111,6 +112,9 @@ public class TypeDefinitionParser {
         if(stackCopy.trim().peek().getType() != TokenType.NAME)
             throw new UnexpectedTokenException(stackCopy.pop());
         String name = stackCopy.pop().getValue();
+        GenericDefinitionList genericDefinitions = null;
+        if(stackCopy.trim().peek().is(TokenType.RELATIONAL_OP, "<"))
+            genericDefinitions = parser.getGeneralParser().parseGenericDefinitions(stackCopy);
         Type superClass = null;
         if(stackCopy.trim().peek().getType() == TokenType.EXTENDS) {
             stackCopy.pop();
@@ -127,7 +131,7 @@ public class TypeDefinitionParser {
         }
         ClassBody body = (ClassBody) parseTypeBody(stackCopy, name, local, false, false, false);
         stack.copyFrom(stackCopy);
-        return new ClassDefinition(annotations, modifiers, name, superClass, interfaces, body);
+        return new ClassDefinition(annotations, modifiers, name, genericDefinitions, superClass, interfaces, body);
     }
 
     private InterfaceDefinition parseInterfaceDefinition(TokenStack stack, boolean local) throws UnexpectedTokenException {
@@ -140,6 +144,9 @@ public class TypeDefinitionParser {
         if(stackCopy.trim().peek().getType() != TokenType.NAME)
             throw new UnexpectedTokenException(stackCopy.pop());
         String name = stackCopy.pop().getValue();
+        GenericDefinitionList genericDefinitions = null;
+        if(stackCopy.trim().peek().is(TokenType.RELATIONAL_OP, "<"))
+            genericDefinitions = parser.getGeneralParser().parseGenericDefinitions(stackCopy);
         List<Type> interfaces = new ArrayList<>();
         if(stackCopy.trim().peek().getType() == TokenType.EXTENDS) {
             stackCopy.pop();
@@ -151,7 +158,7 @@ public class TypeDefinitionParser {
         }
         InterfaceBody body = (InterfaceBody) parseTypeBody(stackCopy, name, local, false, false, true);
         stack.copyFrom(stackCopy);
-        return new InterfaceDefinition(annotations, modifiers, name, interfaces, body);
+        return new InterfaceDefinition(annotations, modifiers, name, genericDefinitions, interfaces, body);
     }
 
     private EnumDefinition parseEnumDefinition(TokenStack stack, boolean local) throws UnexpectedTokenException {
@@ -196,6 +203,8 @@ public class TypeDefinitionParser {
             }
             stack.pop();
         }
+        List<StatementBlock> staticInitializers = new ArrayList<>();
+        List<StatementBlock> initializers = new ArrayList<>();
         List<FieldDefinition> fields = new ArrayList<>();
         List<MethodDefinition> methods = new ArrayList<>();
         List<ConstructorDefinition> constructors = new ArrayList<>();
@@ -209,6 +218,27 @@ public class TypeDefinitionParser {
                 continue;
             } catch (UnexpectedTokenException nextEx) {
                 ex = nextEx;
+            }
+            if(!isInterface) {
+                s = stack.clone();
+                if(!anonymous && s.peek().getType() == TokenType.STATIC) {
+                    try {
+                        s.pop();
+                        staticInitializers.add(parser.getStatementParser().parseStatementBlock(s, false));
+                        stack.copyFrom(s);
+                        continue;
+                    } catch (UnexpectedTokenException nextEx) {
+                        ex = nextEx.getToken().getPos() > ex.getToken().getPos() ? nextEx : ex;
+                    }
+                } else {
+                    try {
+                        initializers.add(parser.getStatementParser().parseStatementBlock(s, false));
+                        stack.copyFrom(s);
+                        continue;
+                    } catch (UnexpectedTokenException nextEx) {
+                        ex = nextEx.getToken().getPos() > ex.getToken().getPos() ? nextEx : ex;
+                    }
+                }
             }
             if(!anonymous && !isInterface) {
                 s = stack.clone();
@@ -238,11 +268,11 @@ public class TypeDefinitionParser {
         }
         stack.pop();
         if(isEnum)
-            return new EnumBody(enumValues, fields, constructors, methods, innerClasses);
+            return new EnumBody(enumValues, staticInitializers, initializers, fields, constructors, methods, innerClasses);
         else if(isInterface)
             return new InterfaceBody(fields, methods, innerClasses);
         else
-            return new ClassBody(fields, constructors, methods, innerClasses);
+            return new ClassBody(staticInitializers, initializers, fields, constructors, methods, innerClasses);
     }
 
     private ClassModifiers parseClassModifiers(TokenStack stack, TokenType... allowed) throws UnexpectedTokenException {

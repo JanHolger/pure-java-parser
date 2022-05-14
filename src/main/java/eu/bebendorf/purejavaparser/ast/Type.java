@@ -10,10 +10,11 @@ import java.util.stream.Stream;
 
 @AllArgsConstructor
 @Getter
-public class Type {
+public class Type implements GenericType {
 
     List<String> name;
-    List<Type> genericTypes;
+    List<GenericType> genericTypes;
+    Type extend;
     int arrayDepth;
     boolean varArgs;
 

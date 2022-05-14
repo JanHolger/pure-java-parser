@@ -15,6 +15,7 @@ public class ClassDefinition implements TypeDefinition {
     List<Annotation> annotations;
     ClassModifiers modifiers;
     String name;
+    GenericDefinitionList genericDefinitions;
     Type superClass;
     List<Type> interfaces;
     ClassBody body;
@@ -27,6 +28,8 @@ public class ClassDefinition implements TypeDefinition {
         for(Annotation a : annotations)
             sb.append(a).append("\n");
         sb.append(modifiers).append("class ").append(name).append(" ");
+        if(genericDefinitions != null)
+            sb.append(genericDefinitions).append(" ");
         if(superClass != null)
             sb.append("extends ").append(superClass).append(" ");
         if(interfaces.size() > 0)

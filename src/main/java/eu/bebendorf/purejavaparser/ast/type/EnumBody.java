@@ -1,5 +1,6 @@
 package eu.bebendorf.purejavaparser.ast.type;
 
+import eu.bebendorf.purejavaparser.ast.statement.StatementBlock;
 import eu.bebendorf.purejavaparser.ast.type.field.FieldDefinition;
 import eu.bebendorf.purejavaparser.ast.type.method.ConstructorDefinition;
 import eu.bebendorf.purejavaparser.ast.type.method.MethodDefinition;
@@ -15,8 +16,8 @@ public class EnumBody extends ClassBody {
 
     final List<EnumValue> values;
 
-    public EnumBody(List<EnumValue> values, List<FieldDefinition> fields, List<ConstructorDefinition> constructors, List<MethodDefinition> methods, List<TypeDefinition> innerClasses) {
-        super(fields, constructors, methods, innerClasses);
+    public EnumBody(List<EnumValue> values, List<StatementBlock> staticInitializers, List<StatementBlock> initializers, List<FieldDefinition> fields, List<ConstructorDefinition> constructors, List<MethodDefinition> methods, List<TypeDefinition> innerClasses) {
+        super(staticInitializers, initializers, fields, constructors, methods, innerClasses);
         this.values = values;
     }
 
@@ -28,6 +29,10 @@ public class EnumBody extends ClassBody {
                 sb.append(PrintUtil.prefixLines(d.toString() + ";", "    ")).append("\n");
             sb.append("\n");
         }
+        for(StatementBlock i : staticInitializers)
+            sb.append(PrintUtil.prefixLines("static " + i.toString(), "    ")).append("\n\n");
+        for(StatementBlock i : initializers)
+            sb.append(PrintUtil.prefixLines(i.toString(), "    ")).append("\n\n");
         for(ConstructorDefinition d : constructors) {
             sb.append(PrintUtil.prefixLines(d.toString(className), "    ")).append("\n\n");
         }

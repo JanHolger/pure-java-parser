@@ -31,7 +31,5 @@ public class ExpressionExample {
 
 ## TODO
 These are features that are known to be missing
-- Ternary Operator
-- Type casting
-- Generic type definition for classes and methods
-- Instance and static initializers
+- Assignment Operator as Expression instead of Statement
+- Prefix Incremental Operators

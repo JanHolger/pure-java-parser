@@ -15,6 +15,7 @@ public class InterfaceDefinition implements TypeDefinition {
     List<Annotation> annotations;
     ClassModifiers modifiers;
     String name;
+    GenericDefinitionList genericDefinitions;
     List<Type> interfaces;
     InterfaceBody body;
 
@@ -26,6 +27,8 @@ public class InterfaceDefinition implements TypeDefinition {
         for(Annotation a : annotations)
             sb.append(a).append("\n");
         sb.append(modifiers).append("interface ").append(name).append(" ");
+        if(genericDefinitions != null)
+            sb.append(genericDefinitions).append(" ");
         if(interfaces.size() > 0)
             sb.append("extends ").append(interfaces.stream().map(Object::toString).collect(Collectors.joining(", "))).append(" ");
         return sb.append(body).toString();

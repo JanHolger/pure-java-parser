@@ -22,12 +22,15 @@ public enum TokenType {
     IMPORT("import", true),
     PACKAGE("package", true),
     STATIC("static", true),
+    INCREMENTAL_OP("(\\+\\+)|(\\-\\-)", false),
     ARITHMETIC_OP("\\+|\\-|\\*|/|%", false),
-    COMPARISON_OP("(==)|(!=)|\\<|\\>|(<=)|(>=)", false),
+    RELATIONAL_OP("\\<|\\>|(<=)|(>=)", false),
+    EQUALITY_OP("(==)|(!=)", false),
     TERNARY_OP("\\?", false),
     COLON(":", false),
     ASSIGN_OP("=", false),
-    INVERSION_OP("!", false),
+    UNARY_OP("~", false),
+    NOT_OP("!", false),
     PROPERTY_ACCESS("\\.", false),
     STATEMENT_END(";", false),
     OPEN_CURLY_BRACKET("\\{", false),
@@ -78,7 +81,8 @@ public enum TokenType {
     GOTO("goto", true),
     CONST("const", true),
     LOGICAL_OP("(\\|\\|)|(&&)|\\^", false),
-    BITWISE_OP("\\||&|(\\<\\<\\<)|(\\>\\>\\>)|(\\<\\<)|(\\>\\>)", false);
+    SHIFT_OP("(\\>\\>\\>)|(\\<\\<)|(\\>\\>)", false),
+    BITWISE_OP("\\||&|\\^", false);
 
     private static final TokenType[] ordered = new TokenType[] {
             // Comments
@@ -127,9 +131,13 @@ public enum TokenType {
             CONTINUE,
             BITWISE_OP,
             LOGICAL_OP,
+            INCREMENTAL_OP,
             ARITHMETIC_OP,
-            COMPARISON_OP,
-            INVERSION_OP,
+            SHIFT_OP,
+            RELATIONAL_OP,
+            EQUALITY_OP,
+            UNARY_OP,
+            NOT_OP,
             ASSIGN_OP,
             TERNARY_OP,
             COLON,

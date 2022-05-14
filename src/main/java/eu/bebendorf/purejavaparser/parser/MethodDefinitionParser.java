@@ -3,6 +3,7 @@ package eu.bebendorf.purejavaparser.parser;
 import eu.bebendorf.purejavaparser.PureJavaParser;
 import eu.bebendorf.purejavaparser.ast.*;
 import eu.bebendorf.purejavaparser.ast.statement.StatementBlock;
+import eu.bebendorf.purejavaparser.ast.type.GenericDefinitionList;
 import eu.bebendorf.purejavaparser.ast.type.method.*;
 import eu.bebendorf.purejavaparser.token.Token;
 import eu.bebendorf.purejavaparser.token.TokenStack;
@@ -40,6 +41,9 @@ public class MethodDefinitionParser {
         TokenStack stackCopy = stack.clone();
         List<Annotation> annotations = parser.getGeneralParser().parseAnnotations(stackCopy);
         ConstructorModifiers modifiers = parseConstructorModifiers(stackCopy);
+        GenericDefinitionList genericDefinitions = null;
+        if(stackCopy.trim().peek().is(TokenType.RELATIONAL_OP, "<"))
+            genericDefinitions = parser.getGeneralParser().parseGenericDefinitions(stackCopy);
         TokenStack stackCopy2 = stackCopy.clone();
         Variable variable = parser.getGeneralParser().parseVariable(stackCopy2);
         if(!variable.getName().equals(className))
@@ -57,13 +61,16 @@ public class MethodDefinitionParser {
         }
         StatementBlock body = parser.getStatementParser().parseStatementBlock(stackCopy, false);
         stack.copyFrom(stackCopy);
-        return new ConstructorDefinition(annotations, modifiers, parameters, throwables, body);
+        return new ConstructorDefinition(annotations, modifiers, genericDefinitions, parameters, throwables, body);
     }
 
     public MethodDefinition parseMethodDefinition(TokenStack stack, boolean interfaceMethod) throws UnexpectedTokenException {
         TokenStack stackCopy = stack.clone();
         List<Annotation> annotations = parser.getGeneralParser().parseAnnotations(stackCopy);
         MethodModifiers modifiers = parseMethodModifiers(stackCopy, interfaceMethod ? INTERFACE_METHOD_MODIFIERS : NORMAL_METHOD_MODIFIERS);
+        GenericDefinitionList genericDefinitions = null;
+        if(stackCopy.trim().peek().is(TokenType.RELATIONAL_OP, "<"))
+            genericDefinitions = parser.getGeneralParser().parseGenericDefinitions(stackCopy);
         Type type = parser.getGeneralParser().parseType(stackCopy, true, true, false);
         Variable variable = parser.getGeneralParser().parseVariable(stackCopy);
         TypedParameterList parameters = parseTypedParameterList(stackCopy);
@@ -85,7 +92,7 @@ public class MethodDefinitionParser {
             body = parser.getStatementParser().parseStatementBlock(stackCopy, false);
         }
         stack.copyFrom(stackCopy);
-        return new MethodDefinition(annotations, modifiers, type, variable, parameters, throwables, body);
+        return new MethodDefinition(annotations, modifiers, genericDefinitions, type, variable, parameters, throwables, body);
     }
 
     private MethodModifiers parseMethodModifiers(TokenStack stack, TokenType... allowed) throws UnexpectedTokenException {
