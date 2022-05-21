@@ -287,50 +287,50 @@ public class TypeDefinitionParser {
                     break;
                 }
             }
-            switch (t.getType()) {
-                case STATIC: {
+            switch (t.getType().getName()) {
+                case "STATIC": {
                     if(modifiers.isStatic() || !isAllowed)
                         throw new UnexpectedTokenException(stack.pop());
                     stack.pop();
                     modifiers.setStatic(true);
                     break;
                 }
-                case PRIVATE: {
+                case "PRIVATE": {
                     if(modifiers.hasAccessModifier() || !isAllowed)
                         throw new UnexpectedTokenException(stack.pop());
                     stack.pop();
                     modifiers.setPrivate(true);
                     break;
                 }
-                case PUBLIC: {
+                case "PUBLIC": {
                     if(modifiers.hasAccessModifier() || !isAllowed)
                         throw new UnexpectedTokenException(stack.pop());
                     stack.pop();
                     modifiers.setPublic(true);
                     break;
                 }
-                case PROTECTED: {
+                case "PROTECTED": {
                     if(modifiers.hasAccessModifier() || !isAllowed)
                         throw new UnexpectedTokenException(stack.pop());
                     stack.pop();
                     modifiers.setProtected(true);
                     break;
                 }
-                case ABSTRACT: {
+                case "ABSTRACT": {
                     if(modifiers.isAbstract() || modifiers.isFinal() || !isAllowed)
                         throw new UnexpectedTokenException(stack.pop());
                     stack.pop();
                     modifiers.setAbstract(true);
                     break;
                 }
-                case FINAL: {
+                case "FINAL": {
                     if(modifiers.isFinal() || modifiers.isAbstract() || !isAllowed)
                         throw new UnexpectedTokenException(stack.pop());
                     stack.pop();
                     modifiers.setFinal(true);
                     break;
                 }
-                case STRICTFP: {
+                case "STRICTFP": {
                     if(modifiers.isStrictfp() || !isAllowed)
                         throw new UnexpectedTokenException(stack.pop());
                     stack.pop();

@@ -107,71 +107,71 @@ public class MethodDefinitionParser {
                     break;
                 }
             }
-            switch (t.getType()) {
-                case STATIC: {
+            switch (t.getType().getName()) {
+                case "STATIC": {
                     if (modifiers.isStatic() || modifiers.isDefault() || !isAllowed)
                         throw new UnexpectedTokenException(stack.pop());
                     stack.pop();
                     modifiers.setStatic(true);
                     break;
                 }
-                case PRIVATE: {
+                case "PRIVATE": {
                     if (modifiers.hasAccessModifier() || !isAllowed)
                         throw new UnexpectedTokenException(stack.pop());
                     stack.pop();
                     modifiers.setPrivate(true);
                     break;
                 }
-                case PUBLIC: {
+                case "PUBLIC": {
                     if (modifiers.hasAccessModifier() || !isAllowed)
                         throw new UnexpectedTokenException(stack.pop());
                     stack.pop();
                     modifiers.setPublic(true);
                     break;
                 }
-                case PROTECTED: {
+                case "PROTECTED": {
                     if (modifiers.hasAccessModifier() || !isAllowed)
                         throw new UnexpectedTokenException(stack.pop());
                     stack.pop();
                     modifiers.setProtected(true);
                     break;
                 }
-                case ABSTRACT: {
+                case "ABSTRACT": {
                     if (modifiers.isAbstract() || modifiers.isFinal() || !isAllowed)
                         throw new UnexpectedTokenException(stack.pop());
                     stack.pop();
                     modifiers.setAbstract(true);
                     break;
                 }
-                case FINAL: {
+                case "FINAL": {
                     if (modifiers.isFinal() || modifiers.isAbstract() || !isAllowed)
                         throw new UnexpectedTokenException(stack.pop());
                     stack.pop();
                     modifiers.setFinal(true);
                     break;
                 }
-                case STRICTFP: {
+                case "STRICTFP": {
                     if (modifiers.isStrictfp() || !isAllowed)
                         throw new UnexpectedTokenException(stack.pop());
                     stack.pop();
                     modifiers.setStrictfp(true);
                     break;
                 }
-                case SYNCHRONIZED: {
+                case "SYNCHRONIZED": {
                     if (modifiers.isSynchronized() || !isAllowed)
                         throw new UnexpectedTokenException(stack.pop());
                     stack.pop();
                     modifiers.setSynchronized(true);
                     break;
                 }
-                case NATIVE: {
+                case "NATIVE": {
                     if (modifiers.isNative() || !isAllowed)
                         throw new UnexpectedTokenException(stack.pop());
                     stack.pop();
                     modifiers.setNative(true);
                     break;
                 }
-                case DEFAULT: {
+                case "DEFAULT": {
                     if (modifiers.isDefault() || modifiers.isStatic() || !isAllowed)
                         throw new UnexpectedTokenException(stack.pop());
                     stack.pop();
@@ -190,22 +190,22 @@ public class MethodDefinitionParser {
         ConstructorModifiers modifiers = new ConstructorModifiers();
         loop:
         while (true) {
-            switch (stack.trim().peek().getType()) {
-                case PRIVATE: {
+            switch (stack.trim().peek().getType().getName()) {
+                case "PRIVATE": {
                     if (modifiers.hasAccessModifier())
                         throw new UnexpectedTokenException(stack.pop());
                     stack.pop();
                     modifiers.setPrivate(true);
                     break;
                 }
-                case PUBLIC: {
+                case "PUBLIC": {
                     if (modifiers.hasAccessModifier())
                         throw new UnexpectedTokenException(stack.pop());
                     stack.pop();
                     modifiers.setPublic(true);
                     break;
                 }
-                case PROTECTED: {
+                case "PROTECTED": {
                     if (modifiers.hasAccessModifier())
                         throw new UnexpectedTokenException(stack.pop());
                     stack.pop();

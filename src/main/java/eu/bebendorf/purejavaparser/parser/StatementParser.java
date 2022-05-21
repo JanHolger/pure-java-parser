@@ -50,38 +50,38 @@ public class StatementParser {
 
     public Statement parseStatement(TokenStack stack, boolean allowTypeDefinition, boolean allowCase) throws UnexpectedTokenException {
         TokenStack stackCopy = stack.trim().clone();
-        switch (stackCopy.peek().getType()) {
-            case OPEN_CURLY_BRACKET: {
+        switch (stackCopy.peek().getType().getName()) {
+            case "OPEN_CURLY_BRACKET": {
                 StatementBlock block = parseStatementBlock(stackCopy, false);
                 stack.copyFrom(stackCopy);
                 return block;
             }
-            case IF: {
+            case "IF": {
                 IfStatement statement = controlStatementParser.parseIfStatement(stackCopy);
                 stack.copyFrom(stackCopy);
                 return statement;
             }
-            case SWITCH: {
+            case "SWITCH": {
                 SwitchStatement statement = controlStatementParser.parseSwitchStatement(stackCopy);
                 stack.copyFrom(stackCopy);
                 return statement;
             }
-            case WHILE: {
+            case "WHILE": {
                 WhileStatement statement = controlStatementParser.parseWhileStatement(stackCopy);
                 stack.copyFrom(stackCopy);
                 return statement;
             }
-            case DO: {
+            case "DO": {
                 DoWhileStatement statement = controlStatementParser.parseDoWhileStatement(stackCopy);
                 stack.copyFrom(stackCopy);
                 return statement;
             }
-            case TRY: {
+            case "TRY": {
                 TryStatement statement = controlStatementParser.parseTryStatement(stackCopy);
                 stack.copyFrom(stackCopy);
                 return statement;
             }
-            case RETURN: {
+            case "RETURN": {
                 ReturnStatement ret = parseReturn(stackCopy);
                 Token t = stackCopy.trim().pop();
                 if(t.getType() != TokenType.STATEMENT_END)
@@ -89,7 +89,7 @@ public class StatementParser {
                 stack.copyFrom(stackCopy);
                 return ret;
             }
-            case ASSERT: {
+            case "ASSERT": {
                 stackCopy.pop();
                 Expression assertion = parser.getExpressionParser().parseExpression(stackCopy);
                 if(stackCopy.trim().peek().getType() != TokenType.STATEMENT_END)
@@ -98,7 +98,7 @@ public class StatementParser {
                 stack.copyFrom(stackCopy);
                 return new AssertStatement(assertion);
             }
-            case BREAK: {
+            case "BREAK": {
                 stackCopy.pop();
                 String label = null;
                 if(stackCopy.trim().peek().getType() == TokenType.NAME)
@@ -109,7 +109,7 @@ public class StatementParser {
                 stack.copyFrom(stackCopy);
                 return new BreakStatement(label);
             }
-            case CONTINUE: {
+            case "CONTINUE": {
                 stackCopy.pop();
                 String label = null;
                 if(stackCopy.trim().peek().getType() == TokenType.NAME)
@@ -120,7 +120,7 @@ public class StatementParser {
                 stack.copyFrom(stackCopy);
                 return new ContinueStatement(label);
             }
-            case THROW: {
+            case "THROW": {
                 stackCopy.pop();
                 Expression value = parser.getExpressionParser().parseExpression(stackCopy);
                 if(stackCopy.trim().peek().getType() != TokenType.STATEMENT_END)
@@ -129,7 +129,7 @@ public class StatementParser {
                 stack.copyFrom(stackCopy);
                 return new ThrowStatement(value);
             }
-            case CASE: {
+            case "CASE": {
                 if(!allowCase)
                     throw new UnexpectedTokenException(stackCopy.pop());
                 stackCopy.pop();
@@ -140,7 +140,7 @@ public class StatementParser {
                 stack.copyFrom(stackCopy);
                 return new CaseStatement(value);
             }
-            case DEFAULT: {
+            case "DEFAULT": {
                 if(!allowCase)
                     throw new UnexpectedTokenException(stackCopy.pop());
                 stackCopy.pop();

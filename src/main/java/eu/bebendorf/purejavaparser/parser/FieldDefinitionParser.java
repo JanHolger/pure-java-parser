@@ -32,50 +32,50 @@ public class FieldDefinitionParser {
         FieldModifiers modifiers = new FieldModifiers();
         loop:
         while (true) {
-            switch (stack.trim().peek().getType()) {
-                case STATIC: {
+            switch (stack.trim().peek().getType().getName()) {
+                case "STATIC": {
                     if(modifiers.isStatic())
                         throw new UnexpectedTokenException(stack.pop());
                     stack.pop();
                     modifiers.setStatic(true);
                     break;
                 }
-                case PRIVATE: {
+                case "PRIVATE": {
                     if(modifiers.hasAccessModifier())
                         throw new UnexpectedTokenException(stack.pop());
                     stack.pop();
                     modifiers.setPrivate(true);
                     break;
                 }
-                case PUBLIC: {
+                case "PUBLIC": {
                     if(modifiers.hasAccessModifier())
                         throw new UnexpectedTokenException(stack.pop());
                     stack.pop();
                     modifiers.setPublic(true);
                     break;
                 }
-                case PROTECTED: {
+                case "PROTECTED": {
                     if(modifiers.hasAccessModifier())
                         throw new UnexpectedTokenException(stack.pop());
                     stack.pop();
                     modifiers.setProtected(true);
                     break;
                 }
-                case TRANSIENT: {
+                case "TRANSIENT": {
                     if(modifiers.isTransient())
                         throw new UnexpectedTokenException(stack.pop());
                     stack.pop();
                     modifiers.setTransient(true);
                     break;
                 }
-                case FINAL: {
+                case "FINAL": {
                     if(modifiers.isFinal())
                         throw new UnexpectedTokenException(stack.pop());
                     stack.pop();
                     modifiers.setFinal(true);
                     break;
                 }
-                case VOLATILE: {
+                case "VOLATILE": {
                     if(modifiers.isVolatile())
                         throw new UnexpectedTokenException(stack.pop());
                     stack.pop();

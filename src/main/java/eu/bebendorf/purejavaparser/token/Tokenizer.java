@@ -11,6 +11,10 @@ public class Tokenizer {
     }
 
     public static TokenStack tokenize(String fileName, String source) throws UnexpectedCharacterException {
+        return tokenize(TokenType.defaultJava(), fileName, source);
+    }
+
+    public static TokenStack tokenize(TokenType[] tokenTypes, String fileName, String source) throws UnexpectedCharacterException {
         int[] lineBreaks = lineBreaks(source);
         TokenStack tokens = new TokenStack();
         int pos = 0;
@@ -19,7 +23,7 @@ public class Tokenizer {
         while (source.length() > 0) {
             int line = line(lineBreaks, pos);
             int linePos = linePos(lineBreaks, line, pos);
-            for(TokenType type : TokenType.ordered()) {
+            for(TokenType type : tokenTypes) {
                 matcher = type.getPattern().matcher(source);
                 if(matcher.matches()) {
                     String value = matcher.group("token");
