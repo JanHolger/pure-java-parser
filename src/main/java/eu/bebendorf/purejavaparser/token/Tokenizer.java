@@ -24,7 +24,14 @@ public class Tokenizer {
             int line = line(lineBreaks, pos);
             int linePos = linePos(lineBreaks, line, pos);
             for(TokenType type : tokenTypes) {
-                matcher = type.getPattern().matcher(source);
+                matcher = null;
+                if(type.isKeyword()) {
+                    matcher = type.getExactPattern().matcher(source);
+                    if(!matcher.matches())
+                        matcher = null;
+                }
+                if(matcher == null)
+                    matcher = type.getPattern().matcher(source);
                 if(matcher.matches()) {
                     String value = matcher.group("token");
                     tokens.push(new Token(fileName, pos, line, linePos, type, value));

@@ -181,11 +181,18 @@ public class TokenType {
     }
 
     final String name;
+    final boolean keyword;
+    final Pattern exactPattern;
     final Pattern pattern;
 
     public TokenType(String name, String pattern, boolean keyword) {
         this.name = name;
-        this.pattern = Pattern.compile("(?<token>" + pattern + ")" + (keyword ? "([^A-Za-z0-9_$]|$)" : "") + "[\\S\\s]*");
+        this.keyword = keyword;
+        if(keyword)
+            this.exactPattern = Pattern.compile("(?<token>" + pattern + ")");
+        else
+            this.exactPattern = null;
+        this.pattern = Pattern.compile("(?<token>" + pattern + ")" + (keyword ? "[^A-Za-z0-9_$]" : "") + "[\\S\\s]*");
     }
 
 }

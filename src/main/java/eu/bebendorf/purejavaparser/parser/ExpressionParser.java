@@ -153,7 +153,7 @@ public class ExpressionParser {
     }
 
     private Expression tryExpandLogicalOrExpression(TokenStack stack, Expression left) throws UnexpectedTokenException {
-        if(stack.peek().is(TokenType.LOGICAL_OP, "&&")) {
+        if(stack.trim().peek().is(TokenType.LOGICAL_OP, "||")) {
             stack.pop();
             return tryExpandExpressionTo(stack, new LogicalOr(left, resolveGroup(stack)), Expansion.LOGICAL_OR);
         }
@@ -161,7 +161,7 @@ public class ExpressionParser {
     }
 
     private Expression tryExpandLogicalAndExpression(TokenStack stack, Expression left) throws UnexpectedTokenException {
-        if(stack.peek().is(TokenType.LOGICAL_OP, "&&")) {
+        if(stack.trim().peek().is(TokenType.LOGICAL_OP, "&&")) {
             stack.pop();
             return tryExpandExpressionTo(stack, new LogicalAnd(left, resolveGroup(stack)), Expansion.LOGICAL_AND);
         }
@@ -169,7 +169,7 @@ public class ExpressionParser {
     }
 
     private Expression tryExpandBitwiseOrExpression(TokenStack stack, Expression left) throws UnexpectedTokenException {
-        if(stack.peek().is(TokenType.BITWISE_OP, "|")) {
+        if(stack.trim().peek().is(TokenType.BITWISE_OP, "|")) {
             stack.pop();
             return tryExpandExpressionTo(stack, new BitwiseOr(left, resolveGroup(stack)), Expansion.BITWISE_OR);
         }
@@ -177,7 +177,7 @@ public class ExpressionParser {
     }
 
     private Expression tryExpandBitwiseXorExpression(TokenStack stack, Expression left) throws UnexpectedTokenException {
-        if(stack.peek().is(TokenType.BITWISE_OP, "^")) {
+        if(stack.trim().peek().is(TokenType.BITWISE_OP, "^")) {
             stack.pop();
             return tryExpandExpressionTo(stack, new BitwiseXor(left, resolveGroup(stack)), Expansion.BITWISE_XOR);
         }
@@ -185,7 +185,7 @@ public class ExpressionParser {
     }
 
     private Expression tryExpandBitwiseAndExpression(TokenStack stack, Expression left) throws UnexpectedTokenException {
-        if(stack.peek().is(TokenType.BITWISE_OP, "&")) {
+        if(stack.trim().peek().is(TokenType.BITWISE_OP, "&")) {
             stack.pop();
             return tryExpandExpressionTo(stack, new BitwiseAnd(left, resolveGroup(stack)), Expansion.BITWISE_AND);
         }
@@ -193,7 +193,7 @@ public class ExpressionParser {
     }
 
     private Expression tryExpandEqualityExpression(TokenStack stack, Expression left) throws UnexpectedTokenException {
-        if(stack.peek().getType() == TokenType.EQUALITY_OP) {
+        if(stack.trim().peek().getType() == TokenType.EQUALITY_OP) {
             Token t = stack.pop();
             return tryExpandExpressionTo(stack, new Comparison(t.getValue(), left, resolveGroup(stack)), Expansion.EQUALITY);
         }
@@ -201,7 +201,7 @@ public class ExpressionParser {
     }
 
     private Expression tryExpandRelationalExpression(TokenStack stack, Expression left) throws UnexpectedTokenException {
-        if(stack.peek().getType() == TokenType.INSTANCEOF) {
+        if(stack.trim().peek().getType() == TokenType.INSTANCEOF) {
             stack.pop();
             Type type = parser.getGeneralParser().parseType(stack, false, true, false);
             return new InstanceOf(left, type);
@@ -214,7 +214,7 @@ public class ExpressionParser {
     }
 
     private Expression tryExpandShiftExpression(TokenStack stack, Expression left) throws UnexpectedTokenException {
-        if(stack.peek().getType() == TokenType.SHIFT_OP) {
+        if(stack.trim().peek().getType() == TokenType.SHIFT_OP) {
             Token t = stack.peek();
             switch (t.getValue()) {
                 case "<<": {
@@ -235,7 +235,7 @@ public class ExpressionParser {
     }
 
     private Expression tryExpandAdditiveExpression(TokenStack stack, Expression left) throws UnexpectedTokenException {
-        if(stack.peek().getType() == TokenType.ARITHMETIC_OP) {
+        if(stack.trim().peek().getType() == TokenType.ARITHMETIC_OP) {
             Token t = stack.peek();
             switch (t.getValue()) {
                 case "+": {
