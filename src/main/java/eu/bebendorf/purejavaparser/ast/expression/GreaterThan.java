@@ -5,14 +5,13 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public class Comparison implements Expression {
+public class GreaterThan implements Expression {
 
-    String comparator;
     Expression first;
     Expression second;
 
     public String toString() {
-        return first.toString() + " " + comparator + " " + second.toString();
+        return first.toString() + " > " + second.toString();
     }
 
 }

@@ -195,7 +195,16 @@ public class ExpressionParser {
     private Expression tryExpandEqualityExpression(TokenStack stack, Expression left) throws UnexpectedTokenException {
         if(stack.trim().peek().getType() == TokenType.EQUALITY_OP) {
             Token t = stack.pop();
-            return tryExpandExpressionTo(stack, new Comparison(t.getValue(), left, resolveGroup(stack)), Expansion.EQUALITY);
+            Expression exp = null;
+            switch (t.getValue()) {
+                case "==":
+                    exp = new Equals(left, resolveGroup(stack));
+                    break;
+                case "!=":
+                    exp = new NotEqual(left, resolveGroup(stack));
+                    break;
+            }
+            return tryExpandExpressionTo(stack, exp, Expansion.EQUALITY);
         }
         return left;
     }
@@ -208,7 +217,22 @@ public class ExpressionParser {
         }
         if(stack.peek().getType() == TokenType.RELATIONAL_OP) {
             Token t = stack.pop();
-            return tryExpandExpressionTo(stack, new Comparison(t.getValue(), left, resolveGroup(stack)), Expansion.RELATIONAL);
+            Expression exp = null;
+            switch (t.getValue()) {
+                case "<":
+                    exp = new LessThan(left, resolveGroup(stack));
+                    break;
+                case ">":
+                    exp = new GreaterThan(left, resolveGroup(stack));
+                    break;
+                case "<=":
+                    exp = new LessThanOrEqual(left, resolveGroup(stack));
+                    break;
+                case ">=":
+                    exp = new GreaterThanOrEqual(left, resolveGroup(stack));
+                    break;
+            }
+            return tryExpandExpressionTo(stack, exp, Expansion.RELATIONAL);
         }
         return left;
     }
