@@ -185,7 +185,7 @@ public class TokenType {
 
     public TokenType(String name, String pattern, boolean keyword) {
         this.name = name;
-        this.pattern = Pattern.compile("(?<token>" + pattern + ")" + (keyword ? "[^A-Za-z0-9_$]" : "") + "[\\S\\s]*");
+        this.pattern = Pattern.compile("(?<token>" + pattern + ")" + (keyword ? "([^A-Za-z0-9_$]|$)" : "") + "[\\S\\s]*");
     }
 
 }
